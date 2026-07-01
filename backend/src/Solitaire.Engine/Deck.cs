@@ -51,15 +51,26 @@ public static class Deck
     public static ImmutableArray<Card> Shuffle(int seed)
     {
         var cards = BuildOrdered().ToArray();
-        var rng = new DeterministicRandom(seed);
+        ShuffleInPlace(cards, new DeterministicRandom(seed));
+        return [.. cards];
+    }
 
-        for (int i = cards.Length - 1; i >= 1; i--)
+    /// <summary>
+    /// The shared seeded Fisher–Yates (Durstenfeld) shuffle used by every variant
+    /// (Klondike's 52-card deck, Spider's 104-card deck, …). Reproduce identically
+    /// in TypeScript: for <c>i</c> from <c>Count-1</c> down to 1, swap
+    /// <c>items[i]</c> with <c>items[rng.NextInt(i + 1)]</c>.
+    /// </summary>
+    public static void ShuffleInPlace<T>(IList<T> items, DeterministicRandom rng)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(rng);
+
+        for (int i = items.Count - 1; i >= 1; i--)
         {
             int j = rng.NextInt(i + 1);
-            (cards[i], cards[j]) = (cards[j], cards[i]);
+            (items[i], items[j]) = (items[j], items[i]);
         }
-
-        return [.. cards];
     }
 
     /// <summary>

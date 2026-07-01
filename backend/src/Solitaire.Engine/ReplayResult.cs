@@ -1,8 +1,10 @@
 namespace Solitaire.Engine;
 
 /// <summary>
-/// The outcome of <see cref="Klondike.Replay"/>.
+/// The strongly-typed outcome of a variant's <c>Replay</c>. Carries the concrete
+/// final state; the API-facing <see cref="ReplayOutcome"/> is the state-free view.
 /// </summary>
+/// <typeparam name="TState">The variant's snapshot type.</typeparam>
 /// <param name="FinalState">
 /// The state after the last applied move. If a move was illegal this is the state
 /// just before it (the illegal move is not applied).
@@ -13,9 +15,14 @@ namespace Solitaire.Engine;
 /// <param name="FirstIllegalMoveIndex">
 /// The zero-based index of the first illegal move, or null if all were legal.
 /// </param>
-public readonly record struct ReplayResult(
-    GameState FinalState,
+public readonly record struct ReplayResult<TState>(
+    TState FinalState,
     int Score,
     bool Won,
     bool AllMovesLegal,
-    int? FirstIllegalMoveIndex);
+    int? FirstIllegalMoveIndex)
+    where TState : IGameState
+{
+    /// <summary>Projects to the variant-neutral <see cref="ReplayOutcome"/>.</summary>
+    public ReplayOutcome ToOutcome() => new(Score, Won, AllMovesLegal, FirstIllegalMoveIndex);
+}

@@ -16,7 +16,7 @@ namespace Solitaire.Engine;
 /// <item><see cref="Tableau"/> — length 7; see <see cref="TableauPile"/>.</item>
 /// </list>
 /// </remarks>
-public sealed class GameState
+public sealed class GameState : IGameState
 {
     /// <summary>Number of tableau columns in Klondike.</summary>
     public const int TableauCount = 7;

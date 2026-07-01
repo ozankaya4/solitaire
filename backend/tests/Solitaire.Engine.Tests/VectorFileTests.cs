@@ -4,13 +4,28 @@ namespace Solitaire.Engine.Tests;
 
 public class VectorFileTests
 {
-    [Fact]
-    public void EmitVectorsFile_WritesSharedKlondikeJson()
+    public static TheoryData<string> Files
     {
-        var file = VectorData.BuildFileDto();
+        get
+        {
+            var data = new TheoryData<string>();
+            foreach (string name in VectorData.FileNames)
+            {
+                data.Add(name);
+            }
+
+            return data;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void EmitVectorsFile_WritesSharedJson(string fileName)
+    {
+        var file = VectorData.BuildFile(fileName);
         string json = VectorData.Serialize(file);
 
-        string path = VectorData.VectorFilePath();
+        string path = VectorData.VectorFilePath(fileName);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, json);
 
@@ -18,56 +33,56 @@ public class VectorFileTests
         Assert.NotEmpty(file.Vectors);
     }
 
-    [Fact]
-    public void EveryVector_ReplaysToItsExpectedScoreAndOutcome()
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void EveryVector_ReplaysToExpected_ThroughUniformEngine(string fileName)
     {
-        foreach (var (name, seed, options, moves) in VectorData.BuildCases())
-        {
-            var result = Klondike.Replay(seed, options, moves);
-            var expected = Klondike.Replay(seed, options, moves); // stable recompute
+        // Deserialize the committed file and verify each vector through the common
+        // ISolitaireEngine interface (the exact path the API uses).
+        string path = VectorData.VectorFilePath(fileName);
+        Assert.True(File.Exists(path), $"Missing {path}; run EmitVectorsFile first.");
 
-            Assert.True(result.AllMovesLegal, $"Vector '{name}' contains an illegal move.");
-            Assert.Equal(expected.Score, result.Score);
-            Assert.Equal(expected.Won, result.Won);
+        var file = VectorData.Deserialize(File.ReadAllText(path));
+        Assert.NotEmpty(file.Vectors);
+
+        foreach (var vector in file.Vectors)
+        {
+            var engine = SolitaireEngines.For(vector.Variant);
+            var outcome = engine.Replay(new GameDefinition(vector.Seed, vector.Options, vector.Moves));
+
+            Assert.True(outcome.AllMovesLegal, $"Vector '{vector.Name}' contains an illegal move.");
+            Assert.Equal(vector.ExpectedFinalScore, outcome.Score);
+            Assert.Equal(vector.ExpectedWin, outcome.Won);
         }
     }
 
-    [Fact]
-    public void VectorsIncludeAtLeastOneWinAndOneNonWin()
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void CommittedFile_IsInSyncWithGenerator(string fileName)
     {
-        var file = VectorData.BuildFileDto();
+        string path = VectorData.VectorFilePath(fileName);
+        Assert.True(File.Exists(path), $"Vector file missing at {path}. Run EmitVectorsFile to generate it.");
+
+        string onDisk = File.ReadAllText(path).Replace("\r\n", "\n");
+        string generated = VectorData.Serialize(VectorData.BuildFile(fileName)).Replace("\r\n", "\n");
+
+        Assert.Equal(generated, onDisk);
+    }
+
+    [Fact]
+    public void KlondikeVectors_IncludeAWinAndANonWin()
+    {
+        var file = VectorData.BuildFile("klondike.json");
         Assert.Contains(file.Vectors, v => v.ExpectedWin);
         Assert.Contains(file.Vectors, v => !v.ExpectedWin);
     }
 
     [Fact]
-    public void MoveDto_RoundTripsThroughSerialization()
+    public void SpiderVectors_CoverAllThreeDifficulties()
     {
-        // Serializing a vector's moves and parsing them back must reproduce the
-        // same replay outcome — this is what guarantees the TS port can consume it.
-        var file = VectorData.BuildFileDto();
-        foreach (var vector in file.Vectors)
-        {
-            var moves = vector.Moves.Select(VectorData.FromDto).ToList();
-            var options = new GameOptions(vector.Options.DrawCount, vector.Options.MaxRedeals);
-            var result = Klondike.Replay(vector.Seed, options, moves);
-
-            Assert.Equal(vector.ExpectedFinalScore, result.Score);
-            Assert.Equal(vector.ExpectedWin, result.Won);
-        }
-    }
-
-    [Fact]
-    public void CommittedFile_IsInSyncWithGenerator()
-    {
-        string path = VectorData.VectorFilePath();
-        Assert.True(
-            File.Exists(path),
-            $"Vector file missing at {path}. Run the EmitVectorsFile test to generate it.");
-
-        string onDisk = File.ReadAllText(path).Replace("\r\n", "\n");
-        string generated = VectorData.Serialize(VectorData.BuildFileDto()).Replace("\r\n", "\n");
-
-        Assert.Equal(generated, onDisk);
+        var file = VectorData.BuildFile("spider.json");
+        Assert.Contains(file.Vectors, v => v.Options["suitCount"] == 1);
+        Assert.Contains(file.Vectors, v => v.Options["suitCount"] == 2);
+        Assert.Contains(file.Vectors, v => v.Options["suitCount"] == 4);
     }
 }

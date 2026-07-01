@@ -172,7 +172,7 @@ public static class Klondike
     /// and is reported via <see cref="ReplayResult.FirstIllegalMoveIndex"/> — this
     /// is the anti-cheat guarantee.
     /// </summary>
-    public static ReplayResult Replay(int seed, GameOptions options, IReadOnlyList<Move> moves)
+    public static ReplayResult<GameState> Replay(int seed, GameOptions options, IReadOnlyList<Move> moves)
     {
         ArgumentNullException.ThrowIfNull(moves);
 
@@ -182,7 +182,7 @@ public static class Klondike
         {
             if (!TryApplyMove(state, moves[i], out var nextState, out _))
             {
-                return new ReplayResult(
+                return new ReplayResult<GameState>(
                     FinalState: state,
                     Score: state.Score,
                     Won: false,
@@ -193,12 +193,68 @@ public static class Klondike
             state = nextState;
         }
 
-        return new ReplayResult(
+        return new ReplayResult<GameState>(
             FinalState: state,
             Score: state.Score,
             Won: state.IsWon,
             AllMovesLegal: true,
             FirstIllegalMoveIndex: null);
+    }
+
+    // ----------------------------------------------------------------------
+    // Portable move (de)serialization for vectors and the API.
+    // ----------------------------------------------------------------------
+
+    /// <summary>Converts a Klondike move to its portable <see cref="MoveDto"/> form.</summary>
+    public static MoveDto ToDto(Move move) => move.Type switch
+    {
+        MoveType.Draw => new MoveDto("Draw"),
+        MoveType.Recycle => new MoveDto("Recycle"),
+        MoveType.WasteToFoundation => new MoveDto("WasteToFoundation"),
+        MoveType.WasteToTableau => new MoveDto("WasteToTableau", Destination: move.Destination),
+        MoveType.TableauToFoundation => new MoveDto("TableauToFoundation", Source: move.Source),
+        MoveType.FoundationToTableau =>
+            new MoveDto("FoundationToTableau", Source: move.Source, Destination: move.Destination),
+        MoveType.TableauToTableau => new MoveDto(
+            "TableauToTableau", Source: move.Source, Destination: move.Destination, Count: move.Count),
+        _ => throw new ArgumentOutOfRangeException(nameof(move), move.Type, "Unknown move type."),
+    };
+
+    /// <summary>Parses a portable <see cref="MoveDto"/> into a Klondike move.</summary>
+    public static Move FromDto(MoveDto dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+        return dto.Type switch
+        {
+            "Draw" => Move.Draw(),
+            "Recycle" => Move.Recycle(),
+            "WasteToFoundation" => Move.WasteToFoundation(),
+            "WasteToTableau" => Move.WasteToTableau(Req(dto.Destination, "destination")),
+            "TableauToFoundation" => Move.TableauToFoundation(Req(dto.Source, "source")),
+            "FoundationToTableau" =>
+                Move.FoundationToTableau((Suit)Req(dto.Source, "source"), Req(dto.Destination, "destination")),
+            "TableauToTableau" => Move.TableauToTableau(
+                Req(dto.Source, "source"), Req(dto.Destination, "destination"), Req(dto.Count, "count")),
+            _ => throw new ArgumentOutOfRangeException(nameof(dto), dto.Type, "Unknown move type."),
+        };
+    }
+
+    private static int Req(int? value, string field) =>
+        value ?? throw new ArgumentException($"Klondike move is missing '{field}'.");
+
+    /// <summary>Reads Klondike options from a portable options bag.</summary>
+    public static GameOptions OptionsFromBag(IReadOnlyDictionary<string, int> options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (!options.TryGetValue("drawCount", out int drawCount))
+        {
+            throw new ArgumentException("Klondike options require 'drawCount'.");
+        }
+
+        int maxRedeals = options.TryGetValue("maxRedeals", out int mr) ? mr : GameOptions.Unlimited;
+        var result = new GameOptions(drawCount, maxRedeals);
+        result.Validate();
+        return result;
     }
 
     // ----------------------------------------------------------------------
@@ -241,29 +297,6 @@ public static class Klondike
 
         return true;
     }
-
-    /// <summary>
-    /// Removes the top <paramref name="count"/> cards from a tableau pile, flipping
-    /// a newly exposed face-down card if the face-up run is emptied.
-    /// </summary>
-    private static (TableauPile Pile, bool Flipped) RemoveTop(TableauPile pile, int count)
-    {
-        int newCount = pile.Count - count;
-        var cards = pile.Cards.RemoveRange(newCount, count);
-        int faceDown = pile.FaceDownCount;
-        bool flipped = false;
-
-        if (newCount > 0 && faceDown == newCount)
-        {
-            faceDown -= 1;
-            flipped = true;
-        }
-
-        return (new TableauPile(cards, faceDown), flipped);
-    }
-
-    private static TableauPile AddToTableau(TableauPile pile, ReadOnlySpan<Card> cards) =>
-        new(pile.Cards.AddRange(cards), pile.FaceDownCount);
 
     // ----------------------------------------------------------------------
     // Move application. Returns null on any rule violation. Never mutates input.
@@ -350,7 +383,7 @@ public static class Klondike
         }
 
         var newWaste = state.Waste.RemoveAt(state.Waste.Length - 1);
-        var newTableau = state.Tableau.SetItem(move.Destination, AddToTableau(dest, [card]));
+        var newTableau = state.Tableau.SetItem(move.Destination, dest.Append([card]));
 
         return (state.With(waste: newWaste, tableau: newTableau), Scoring.WasteToTableau);
     }
@@ -368,7 +401,7 @@ public static class Klondike
             return null;
         }
 
-        var (newSource, flipped) = RemoveTop(source, 1);
+        var newSource = source.RemoveTop(1, out bool flipped);
         var newFoundations = state.Foundations.SetItem((int)card.Suit, card.Rank);
         var newTableau = state.Tableau.SetItem(move.Source, newSource);
 
@@ -397,7 +430,7 @@ public static class Klondike
         }
 
         var newFoundations = state.Foundations.SetItem(move.Source, rank - 1);
-        var newTableau = state.Tableau.SetItem(move.Destination, AddToTableau(dest, [card]));
+        var newTableau = state.Tableau.SetItem(move.Destination, dest.Append([card]));
 
         return (state.With(tableau: newTableau, foundations: newFoundations), Scoring.FoundationToTableau);
     }
@@ -427,8 +460,8 @@ public static class Klondike
             return null;
         }
 
-        var (newSource, flipped) = RemoveTop(source, move.Count);
-        var newDest = AddToTableau(dest, moved);
+        var newSource = source.RemoveTop(move.Count, out bool flipped);
+        var newDest = dest.Append(moved);
         var newTableau = state.Tableau
             .SetItem(move.Source, newSource)
             .SetItem(move.Destination, newDest);

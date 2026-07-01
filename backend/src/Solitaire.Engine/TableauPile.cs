@@ -49,4 +49,28 @@ public sealed class TableauPile
 
     /// <summary>True if the card at <paramref name="index"/> (from the bottom) is face-up.</summary>
     public bool IsFaceUp(int index) => index >= FaceDownCount;
+
+    /// <summary>
+    /// Removes the top <paramref name="count"/> cards. If that empties the face-up
+    /// run while face-down cards remain, the newly exposed card is turned face-up
+    /// and <paramref name="flipped"/> is set. Shared by all tableau-based variants.
+    /// </summary>
+    public TableauPile RemoveTop(int count, out bool flipped)
+    {
+        int newCount = Count - count;
+        var cards = Cards.RemoveRange(newCount, count);
+        int faceDown = FaceDownCount;
+        flipped = false;
+
+        if (newCount > 0 && faceDown == newCount)
+        {
+            faceDown -= 1;
+            flipped = true;
+        }
+
+        return new TableauPile(cards, faceDown);
+    }
+
+    /// <summary>Returns a copy with <paramref name="cards"/> pushed on top, face-up.</summary>
+    public TableauPile Append(ReadOnlySpan<Card> cards) => new(Cards.AddRange(cards), FaceDownCount);
 }
