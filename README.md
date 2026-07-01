@@ -1,7 +1,6 @@
 # Solitaire
 
-A web-based Solitaire game. This repository is a monorepo skeleton — game logic
-and UI are not implemented yet.
+A web-based Solitaire game. This repository is a monorepo skeleton.
 
 ## Structure
 
@@ -54,7 +53,7 @@ npm run format       # Prettier
 ```
 
 Dependencies are deliberately minimal: **motion** for animation and
-**i18next / react-i18next** for localization. No component/UI library — CSS is
+**i18next / react-i18next** for localization. No component/UI library. CSS is
 hand-written.
 
 ## License
