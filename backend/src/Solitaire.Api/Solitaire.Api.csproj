@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Solitaire.Api — HTTP boundary (Minimal API).
+    Depends on Solitaire.Engine for game logic; contains no game rules itself.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Solitaire.Engine\Solitaire.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

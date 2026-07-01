@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Solitaire.Engine — pure game logic.
+    Intentionally has NO reference to ASP.NET Core or any web/hosting package.
+    Keep this project framework-agnostic so it can be shared and unit-tested in isolation.
+  -->
+
+</Project>
