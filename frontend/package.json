@@ -9,10 +9,15 @@
     "preview": "vite preview",
     "type-check": "tsc -b --noEmit",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "gen:levels": "tsx scripts/generate-klondike-levels.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@fontsource/space-mono": "^5.1.0",
+    "@fontsource/zilla-slab": "^5.1.0",
     "i18next": "^24.2.1",
     "motion": "^11.15.0",
     "react": "^19.0.0",
@@ -30,8 +35,10 @@
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.18.2",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "vitest": "^3.2.4"
   }
 }

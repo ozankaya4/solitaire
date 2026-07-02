@@ -1,0 +1,127 @@
+/*
+ * Design tokens. Dark ("phosphor terminal on a night card-table") is the
+ * default; light ("worn daytime card-table / vintage cardboard") overrides via
+ * [data-theme="light"]. Components consume ONLY these variables — no magic
+ * colors, radii, or durations inline.
+ */
+
+:root {
+  /* -- Type ---------------------------------------------------------------- */
+  --font-display: 'Zilla Slab', 'Times New Roman', serif;
+  --font-ui: 'Space Mono', 'Courier New', monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.625rem;
+  --text-2xl: 2.25rem;
+  --text-3xl: 3.25rem;
+
+  --tracking-tight: -0.01em;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.18em;
+  --leading-tight: 1.04;
+  --leading: 1.5;
+
+  /* -- Spacing (4px base, deliberately named) ------------------------------ */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.25rem;
+  --space-2xl: 3.5rem;
+  --space-3xl: 5.5rem;
+
+  /* -- Radii (restrained; not everything is a pill) ------------------------ */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* -- Motion -------------------------------------------------------------- */
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 0.9, 0.1, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* -- Layout -------------------------------------------------------------- */
+  --shell-max: 30rem; /* phone-first content column */
+  --border-hair: 1px;
+  --border-thick: 2px;
+
+  /* -- Dark theme (default) ------------------------------------------------ */
+  --color-bg: #0a0f0c;
+  --color-bg-2: #0d130f;
+  --color-surface: #121a15;
+  --color-surface-2: #17211b;
+  --color-inset: #0b110d;
+  --color-border: #29372d;
+  --color-border-strong: #3d5443;
+
+  --color-ink: #e9e4d2;
+  --color-ink-dim: #9bab9c;
+  --color-ink-faint: #64726a;
+
+  --color-accent: #e7b24a; /* amber phosphor */
+  --color-accent-hot: #f4c766;
+  --color-on-accent-solid: #1a1305;
+  --color-accent-2: #66d29a; /* green phosphor */
+  --color-felt: #1f6a44;
+
+  --color-danger: #d76a4f;
+  --suit-red: #db6f52;
+  --suit-dark: #d8d3c1;
+
+  --glow-accent: 0 0 18px rgba(231, 178, 74, 0.28);
+  --glow-text: 0 0 12px rgba(231, 178, 74, 0.22);
+  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+
+  --texture-strength: 0.06;
+  --scanline-strength: 0.16;
+  --vignette: rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --color-bg: #e7dcc2;
+  --color-bg-2: #ddd0b1;
+  --color-surface: #f5edd9;
+  --color-surface-2: #efe5cd;
+  --color-inset: #e2d6ba;
+  --color-border: #cabb93;
+  --color-border-strong: #a68f5c;
+
+  --color-ink: #22301e;
+  --color-ink-dim: #566150;
+  --color-ink-faint: #8a917c;
+
+  --color-accent: #b06a1c; /* burnt amber */
+  --color-accent-hot: #c67f2a;
+  --color-on-accent-solid: #fbf3e0;
+  --color-accent-2: #2f7d52; /* felt green */
+  --color-felt: #2f7d52;
+
+  --color-danger: #b0432a;
+  --suit-red: #b23a2c;
+  --suit-dark: #22301e;
+
+  --glow-accent: 0 2px 0 rgba(120, 82, 20, 0.12);
+  --glow-text: none;
+  --shadow-sm: 0 1px 0 rgba(120, 96, 40, 0.18), 0 2px 8px rgba(80, 60, 20, 0.14);
+  --shadow-md: 0 12px 28px rgba(80, 60, 20, 0.2);
+  --ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent);
+
+  --texture-strength: 0.5;
+  --scanline-strength: 0;
+  --vignette: rgba(90, 70, 30, 0.14);
+  color-scheme: light;
+}

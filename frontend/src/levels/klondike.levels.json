@@ -1,0 +1,505 @@
+{
+  "variant": "klondike",
+  "solverBudget": 200000,
+  "options": {
+    "drawCount": 1,
+    "maxRedeals": 2147483647
+  },
+  "levels": [
+    {
+      "level": 1,
+      "seed": 62,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 163,
+        "solutionLength": 163,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 2,
+      "seed": 33,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 165,
+        "solutionLength": 165,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 3,
+      "seed": 28,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 183,
+        "solutionLength": 183,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 4,
+      "seed": 18,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 200,
+        "solutionLength": 200,
+        "maxBranching": 10
+      }
+    },
+    {
+      "level": 5,
+      "seed": 13,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 209,
+        "solutionLength": 209,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 6,
+      "seed": 20,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 215,
+        "solutionLength": 215,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 7,
+      "seed": 59,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 215,
+        "solutionLength": 215,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 8,
+      "seed": 48,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 228,
+        "solutionLength": 228,
+        "maxBranching": 6
+      }
+    },
+    {
+      "level": 9,
+      "seed": 21,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 242,
+        "solutionLength": 242,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 10,
+      "seed": 45,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 243,
+        "solutionLength": 243,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 11,
+      "seed": 22,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 258,
+        "solutionLength": 258,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 12,
+      "seed": 12,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 271,
+        "solutionLength": 271,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 13,
+      "seed": 37,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 271,
+        "solutionLength": 271,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 14,
+      "seed": 63,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 280,
+        "solutionLength": 280,
+        "maxBranching": 6
+      }
+    },
+    {
+      "level": 15,
+      "seed": 68,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 281,
+        "solutionLength": 281,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 16,
+      "seed": 58,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 302,
+        "solutionLength": 302,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 17,
+      "seed": 15,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 377,
+        "solutionLength": 289,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 18,
+      "seed": 70,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 347,
+        "solutionLength": 347,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 19,
+      "seed": 32,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 415,
+        "solutionLength": 355,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 20,
+      "seed": 1,
+      "grade": "easy",
+      "hintBudget": 5,
+      "metrics": {
+        "nodesExpanded": 407,
+        "solutionLength": 407,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 21,
+      "seed": 6,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 414,
+        "solutionLength": 414,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 22,
+      "seed": 54,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 419,
+        "solutionLength": 419,
+        "maxBranching": 10
+      }
+    },
+    {
+      "level": 23,
+      "seed": 71,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 509,
+        "solutionLength": 490,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 24,
+      "seed": 60,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 819,
+        "solutionLength": 187,
+        "maxBranching": 11
+      }
+    },
+    {
+      "level": 25,
+      "seed": 31,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 534,
+        "solutionLength": 534,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 26,
+      "seed": 41,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 552,
+        "solutionLength": 552,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 27,
+      "seed": 5,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 1119,
+        "solutionLength": 281,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 28,
+      "seed": 8,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 1185,
+        "solutionLength": 273,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 29,
+      "seed": 56,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 1202,
+        "solutionLength": 314,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 30,
+      "seed": 7,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 1365,
+        "solutionLength": 413,
+        "maxBranching": 12
+      }
+    },
+    {
+      "level": 31,
+      "seed": 2,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 2664,
+        "solutionLength": 210,
+        "maxBranching": 10
+      }
+    },
+    {
+      "level": 32,
+      "seed": 4,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 2765,
+        "solutionLength": 263,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 33,
+      "seed": 51,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 2847,
+        "solutionLength": 209,
+        "maxBranching": 7
+      }
+    },
+    {
+      "level": 34,
+      "seed": 14,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 5252,
+        "solutionLength": 308,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 35,
+      "seed": 34,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 5286,
+        "solutionLength": 362,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 36,
+      "seed": 47,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 5985,
+        "solutionLength": 486,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 37,
+      "seed": 39,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 7610,
+        "solutionLength": 226,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 38,
+      "seed": 49,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 7862,
+        "solutionLength": 230,
+        "maxBranching": 10
+      }
+    },
+    {
+      "level": 39,
+      "seed": 66,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 11498,
+        "solutionLength": 266,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 40,
+      "seed": 10,
+      "grade": "medium",
+      "hintBudget": 3,
+      "metrics": {
+        "nodesExpanded": 44543,
+        "solutionLength": 332,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 41,
+      "seed": 3,
+      "grade": "hard",
+      "hintBudget": 1,
+      "metrics": {
+        "nodesExpanded": 47502,
+        "solutionLength": 430,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 42,
+      "seed": 52,
+      "grade": "hard",
+      "hintBudget": 1,
+      "metrics": {
+        "nodesExpanded": 105131,
+        "solutionLength": 207,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 43,
+      "seed": 42,
+      "grade": "hard",
+      "hintBudget": 1,
+      "metrics": {
+        "nodesExpanded": 142781,
+        "solutionLength": 170,
+        "maxBranching": 8
+      }
+    },
+    {
+      "level": 44,
+      "seed": 65,
+      "grade": "hard",
+      "hintBudget": 1,
+      "metrics": {
+        "nodesExpanded": 160066,
+        "solutionLength": 290,
+        "maxBranching": 9
+      }
+    },
+    {
+      "level": 45,
+      "seed": 30,
+      "grade": "hard",
+      "hintBudget": 1,
+      "metrics": {
+        "nodesExpanded": 191722,
+        "solutionLength": 184,
+        "maxBranching": 8
+      }
+    }
+  ]
+}

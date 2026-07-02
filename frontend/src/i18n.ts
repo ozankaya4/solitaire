@@ -1,11 +1,108 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// Localization bootstrap. Translation resources are intentionally empty for now;
-// namespaces and locale files will be added alongside the UI.
+// Localization bootstrap. Two languages ship for now (English + Turkish); the
+// active language is driven by player settings.
 const resources = {
   en: {
-    translation: {},
+    translation: {
+      brand: 'Solitaire',
+      menu: {
+        kicker: 'The card table',
+        titleA: 'Soli',
+        titleB: 'taire',
+        tagline: 'A deck, a deal, and a quiet hour. Pick a game and play.',
+        choose: 'Choose a game',
+        play: 'Deal new game',
+        settings: 'Settings',
+        saved: 'Saved games',
+        mostPopular: 'Most popular',
+        drawNote: 'Draw {{count}} · {{variant}}',
+      },
+      settings: {
+        title: 'Settings',
+        defaultVariant: 'Default game',
+        defaultVariantHint: 'Opens first when you start.',
+        theme: 'Theme',
+        themeHint: 'Phosphor night or worn daylight.',
+        dark: 'Dark',
+        light: 'Light',
+        language: 'Language',
+        languageHint: 'Interface language.',
+        draw: 'Klondike draw',
+        drawHint: 'Cards turned from the stock.',
+        draw1: 'Draw 1',
+        draw3: 'Draw 3',
+      },
+      saved: {
+        title: 'Saved games',
+        emptyTitle: 'No saved games yet',
+        emptyBody: 'Games you pause will wait for you here.',
+      },
+      variant: {
+        klondike: 'Klondike',
+        spider: 'Spider',
+        freecell: 'FreeCell',
+        pyramid: 'Pyramid',
+        tripeaks: 'TriPeaks',
+      },
+      a11y: {
+        back: 'Back',
+        home: 'Home',
+        toggleTheme: 'Toggle theme',
+      },
+      footer: 'Local play · the server keeps score',
+    },
+  },
+  tr: {
+    translation: {
+      brand: 'Solitaire',
+      menu: {
+        kicker: 'Kağıt masası',
+        titleA: 'Soli',
+        titleB: 'taire',
+        tagline: 'Bir deste, bir dağıtım ve sakin bir saat. Bir oyun seç ve oyna.',
+        choose: 'Bir oyun seç',
+        play: 'Yeni oyun dağıt',
+        settings: 'Ayarlar',
+        saved: 'Kayıtlı oyunlar',
+        mostPopular: 'En popüler',
+        drawNote: '{{count}}’li çekiş · {{variant}}',
+      },
+      settings: {
+        title: 'Ayarlar',
+        defaultVariant: 'Varsayılan oyun',
+        defaultVariantHint: 'Başlarken ilk bu açılır.',
+        theme: 'Tema',
+        themeHint: 'Fosfor gecesi ya da eskimiş gündüz.',
+        dark: 'Koyu',
+        light: 'Açık',
+        language: 'Dil',
+        languageHint: 'Arayüz dili.',
+        draw: 'Klondike çekiş',
+        drawHint: 'Desteden çevrilen kart sayısı.',
+        draw1: '1 çek',
+        draw3: '3 çek',
+      },
+      saved: {
+        title: 'Kayıtlı oyunlar',
+        emptyTitle: 'Henüz kayıtlı oyun yok',
+        emptyBody: 'Duraklattığın oyunlar burada seni bekler.',
+      },
+      variant: {
+        klondike: 'Klondike',
+        spider: 'Örümcek',
+        freecell: 'FreeCell',
+        pyramid: 'Piramit',
+        tripeaks: 'Üç Tepe',
+      },
+      a11y: {
+        back: 'Geri',
+        home: 'Ana menü',
+        toggleTheme: 'Temayı değiştir',
+      },
+      footer: 'Yerel oyun · puanı sunucu tutar',
+    },
   },
 } as const;
 
