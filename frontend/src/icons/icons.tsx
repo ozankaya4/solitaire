@@ -223,6 +223,67 @@ export function CheckIcon(props: IconProps) {
   );
 }
 
+export function RefreshIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path
+        d="M19 5.5v4h-4M5 18.5v-4h4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.4 9.2A7 7 0 0 0 6.3 7.4M5.6 14.8a7 7 0 0 0 12.1 1.8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function UndoIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path
+        d="M9 6.5 4.5 11 9 15.5M5 11h9a5 5 0 0 1 0 10h-3"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function BulbIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path
+        d="M9 17h6M9.5 20h5M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.1 1.1 1.9h5c.1-.8.5-1.4 1.1-1.9A6 6 0 0 0 12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function GridIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path
+        d="M4 5.5h6v6H4zM14 5.5h6v6h-6zM4 15.5h6v3H4zM14 15.5h6v3h-6z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function StarIcon(props: IconProps) {
   return (
     <Svg {...props}>

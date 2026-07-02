@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { ScreenName } from './app/types';
+import { GameScreen } from './components/board/GameScreen';
 import { MainMenu } from './components/MainMenu';
 import { SavedGamesScreen } from './components/SavedGamesScreen';
 import { SettingsScreen } from './components/SettingsScreen';
@@ -10,7 +11,11 @@ export default function App() {
   const [screen, setScreen] = useState<ScreenName>('menu');
   const reduceMotion = useReducedMotion();
 
-  // Motion is opt-out: reduced-motion users get no movement, just a plain swap.
+  // The board is full-screen with its own control bar (no global top bar).
+  if (screen === 'game') {
+    return <GameScreen onExit={() => setScreen('menu')} />;
+  }
+
   const transition = reduceMotion
     ? { duration: 0 }
     : { duration: 0.28, ease: [0.16, 0.9, 0.1, 1] as const };
@@ -32,9 +37,7 @@ export default function App() {
         >
           {screen === 'menu' && (
             <MainMenu
-              onPlay={() => {
-                /* Board is built in a later stage; the shell is the target here. */
-              }}
+              onPlay={() => setScreen('game')}
               onOpenSettings={() => setScreen('settings')}
               onOpenSaved={() => setScreen('saved')}
             />
