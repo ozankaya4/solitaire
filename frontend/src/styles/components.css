@@ -29,6 +29,7 @@
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
   background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   border-bottom: var(--border-hair) solid var(--color-border);
 }
@@ -423,6 +424,83 @@
 .empty__title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
+  color: var(--color-ink);
+}
+
+/* -- Saved games list ------------------------------------------------------ */
+.savelist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.savecard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.savecard__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.savecard__icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-accent);
+  border: var(--border-hair) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.savecard__meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.savecard__name {
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+}
+
+.savecard__sub {
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink-dim);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-xs);
+  margin: 0;
+  padding: var(--space-xs) 0;
+  border-block: var(--border-hair) dashed var(--color-border);
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stats dt {
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.stats dd {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
   color: var(--color-ink);
 }
 

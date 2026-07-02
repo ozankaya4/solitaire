@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import i18n from '../i18n';
+import { getPersistedSettings, setPersistedSettings } from '../storage/cache';
 import type { DrawMode, Language, ThemeName, VariantId } from './types';
 
 interface Settings {
@@ -20,8 +21,6 @@ interface SettingsContextValue extends Settings {
   setDrawMode: (drawMode: DrawMode) => void;
 }
 
-const STORAGE_KEY = 'solitaire:settings';
-
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 function prefersLight(): boolean {
@@ -37,18 +36,8 @@ function loadInitial(): Settings {
     language: 'en',
     drawMode: 1,
   };
-  if (typeof localStorage === 'undefined') {
-    return base;
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === null) {
-      return base;
-    }
-    return { ...base, ...(JSON.parse(raw) as Partial<Settings>) };
-  } catch {
-    return base;
-  }
+  // The cache is hydrated from IndexedDB before render (see main.tsx bootstrap).
+  return { ...base, ...(getPersistedSettings() ?? {}) };
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
@@ -61,11 +50,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (i18n.language !== settings.language) {
       void i18n.changeLanguage(settings.language);
     }
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch {
-      /* storage unavailable — settings simply won't persist */
-    }
+    setPersistedSettings(settings);
   }, [settings]);
 
   const value = useMemo<SettingsContextValue>(

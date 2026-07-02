@@ -8,7 +8,9 @@ import { KLONDIKE_UNLIMITED_REDEALS } from '../engine/klondike';
 import type { MoveDto } from '../engine/types';
 import { getHint } from '../game/hints';
 import { getLevel } from '../game/levels';
-import { advanceLevel, createLocalStorageProgressStore, getCurrentLevel } from '../game/progress';
+import { advanceLevel, getCurrentLevel } from '../game/progress';
+import { recordGameStarted, recordWin } from '../storage/cache';
+import { createCacheProgressStore } from '../storage/progressStore';
 import { useSettings } from '../app/settings';
 import type { VariantId } from '../app/types';
 import { boardModel, type BoardModel } from './boardModel';
@@ -61,7 +63,7 @@ export interface Game {
   switchVariant: (variant: VariantId) => void;
 }
 
-const progress = createLocalStorageProgressStore();
+const progress = createCacheProgressStore();
 
 function bagFor(
   variant: VariantId,
@@ -134,17 +136,22 @@ function begin(variant: VariantId, drawMode: number): GameData {
   return resume(variant) ?? startLevel(variant, drawMode);
 }
 
-export function useGame(): Game {
+export function useGame(initialVariant?: VariantId): Game {
   const { defaultVariant, drawMode } = useSettings();
   const drawRef = useRef(drawMode);
   drawRef.current = drawMode;
 
-  // Initialize once per board entry → always the settings default variant.
-  const [data, setData] = useState<GameData>(() => begin(defaultVariant, drawMode));
+  // Board entry uses the settings default variant, unless an explicit variant is
+  // requested (e.g. resuming a specific game from the Saved-games list).
+  const startVariant = initialVariant ?? defaultVariant;
+  const [data, setData] = useState<GameData>(() => begin(startVariant, drawMode));
   const [selected, setSelected] = useState<Selection | null>(null);
   const [hint, setHint] = useState<HintHighlight | null>(null);
   const [dealNonce, setDealNonce] = useState(0);
   const wonHandled = useRef(false);
+  // Stats: a "fresh" deal (no resume) counts as a game played; a resume does not.
+  const fresh = useRef(isPlayable(startVariant) && loadSavedGame(startVariant) === null);
+  const startedAt = useRef(Date.now());
 
   const supported = isPlayable(data.variant) && data.states.length > 0;
   const current = data.states[data.states.length - 1];
@@ -165,6 +172,7 @@ export function useGame(): Game {
         wonHandled.current = true;
         advanceLevel(progress, data.variant);
         clearSavedGame(data.variant);
+        recordWin(data.variant, Date.now() - startedAt.current);
       }
       return;
     }
@@ -178,6 +186,14 @@ export function useGame(): Game {
       hintsUsed: data.hintsUsed,
     });
   }, [data, supported, won]);
+
+  // Count a fresh deal as a game played (a resume does not count).
+  useEffect(() => {
+    startedAt.current = Date.now();
+    if (fresh.current && isPlayable(data.variant)) {
+      recordGameStarted(data.variant);
+    }
+  }, [dealNonce, data.variant]);
 
   const commit = useCallback((move: MoveDto) => {
     setSelected(null);
@@ -336,6 +352,7 @@ export function useGame(): Game {
 
   const newDeal = useCallback(() => {
     wonHandled.current = false;
+    fresh.current = true;
     setSelected(null);
     setHint(null);
     setData(startLevel(data.variant, drawRef.current));
@@ -344,6 +361,7 @@ export function useGame(): Game {
 
   const switchVariant = useCallback((variant: VariantId) => {
     wonHandled.current = false;
+    fresh.current = isPlayable(variant) && loadSavedGame(variant) === null;
     setSelected(null);
     setHint(null);
     setData(begin(variant, drawRef.current));

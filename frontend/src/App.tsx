@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import type { ScreenName } from './app/types';
+import type { ScreenName, VariantId } from './app/types';
 import { GameScreen } from './components/board/GameScreen';
 import { MainMenu } from './components/MainMenu';
 import { SavedGamesScreen } from './components/SavedGamesScreen';
@@ -9,11 +9,19 @@ import { TopBar } from './components/TopBar';
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenName>('menu');
+  // When set, the board resumes this specific variant (e.g. from Saved games);
+  // otherwise it uses the settings default.
+  const [resumeVariant, setResumeVariant] = useState<VariantId | undefined>(undefined);
   const reduceMotion = useReducedMotion();
+
+  const openGame = (variant?: VariantId) => {
+    setResumeVariant(variant);
+    setScreen('game');
+  };
 
   // The board is full-screen with its own control bar (no global top bar).
   if (screen === 'game') {
-    return <GameScreen onExit={() => setScreen('menu')} />;
+    return <GameScreen onExit={() => setScreen('menu')} initialVariant={resumeVariant} />;
   }
 
   const transition = reduceMotion
@@ -37,13 +45,15 @@ export default function App() {
         >
           {screen === 'menu' && (
             <MainMenu
-              onPlay={() => setScreen('game')}
+              onPlay={() => openGame(undefined)}
               onOpenSettings={() => setScreen('settings')}
               onOpenSaved={() => setScreen('saved')}
             />
           )}
           {screen === 'settings' && <SettingsScreen onBack={() => setScreen('menu')} />}
-          {screen === 'saved' && <SavedGamesScreen onBack={() => setScreen('menu')} />}
+          {screen === 'saved' && (
+            <SavedGamesScreen onBack={() => setScreen('menu')} onResume={(v) => openGame(v)} />
+          )}
         </motion.main>
       </AnimatePresence>
     </div>

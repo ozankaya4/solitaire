@@ -9,9 +9,15 @@ import { variantIcon } from '../variantIcon';
 
 const PLAYABLE: readonly VariantId[] = ['klondike', 'spider'];
 
-export function GameScreen({ onExit }: { onExit: () => void }) {
+export function GameScreen({
+  onExit,
+  initialVariant,
+}: {
+  onExit: () => void;
+  initialVariant?: VariantId;
+}) {
   const { t } = useTranslation();
-  const game = useGame();
+  const game = useGame(initialVariant);
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!game.supported) {
