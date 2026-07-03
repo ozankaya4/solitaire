@@ -7,7 +7,13 @@ import { Segmented } from './Segmented';
 import { Select, type SelectOption } from './Select';
 import { variantIcon } from './variantIcon';
 
-export function SettingsScreen({ onBack }: { onBack: () => void }) {
+interface SettingsScreenProps {
+  onBack: () => void;
+  onOpenPrivacy: () => void;
+  onOpenTerms: () => void;
+}
+
+export function SettingsScreen({ onBack, onOpenPrivacy, onOpenTerms }: SettingsScreenProps) {
   const { t } = useTranslation();
   const {
     theme,
@@ -74,8 +80,18 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
             value={language}
             onChange={setLanguage}
             options={[
-              { value: 'en', label: 'EN', icon: <GlobeIcon size={16} /> },
-              { value: 'tr', label: 'TR', icon: <GlobeIcon size={16} /> },
+              {
+                value: 'en',
+                label: t('settings.english'),
+                lang: 'en',
+                icon: <GlobeIcon size={16} />,
+              },
+              {
+                value: 'tr',
+                label: t('settings.turkish'),
+                lang: 'tr',
+                icon: <GlobeIcon size={16} />,
+              },
             ]}
           />
         </div>
@@ -93,6 +109,18 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
               { value: '3', label: t('settings.draw3') },
             ]}
           />
+        </div>
+      </div>
+
+      <div className="panel">
+        <p className="panel__label">{t('settings.legal')}</p>
+        <div className="btn__row">
+          <button type="button" className="btn" onClick={onOpenPrivacy}>
+            {t('settings.privacyLink')}
+          </button>
+          <button type="button" className="btn" onClick={onOpenTerms}>
+            {t('settings.termsLink')}
+          </button>
         </div>
       </div>
     </section>

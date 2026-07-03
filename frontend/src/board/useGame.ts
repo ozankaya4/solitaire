@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Card } from '../engine/cards';
 import { KLONDIKE_UNLIMITED_REDEALS } from '../engine/klondike';
 import type { MoveDto } from '../engine/types';
+import type { Grade } from '../game/grading';
 import { getHint } from '../game/hints';
 import { getLevel } from '../game/levels';
 import { advanceLevel, getCurrentLevel } from '../game/progress';
@@ -31,6 +32,7 @@ export interface HintHighlight {
 interface GameData {
   readonly variant: VariantId;
   readonly level: number;
+  readonly grade: Grade;
   readonly seed: number;
   readonly bag: Record<string, number>;
   readonly states: readonly AnyState[];
@@ -44,6 +46,7 @@ export interface Game {
   readonly supported: boolean;
   readonly model: BoardModel | null;
   readonly level: number;
+  readonly grade: Grade;
   readonly score: number;
   readonly won: boolean;
   readonly canUndo: boolean;
@@ -84,6 +87,7 @@ function startLevel(variant: VariantId, drawMode: number): GameData {
   return {
     variant,
     level,
+    grade: def.grade,
     seed: def.seed,
     bag,
     states: [createGame(variant, def.seed, bag)],
@@ -108,14 +112,16 @@ function resume(variant: VariantId): GameData | null {
     states.push(result.next);
     moves.push(move);
   }
+  const def = getLevel(variant, saved.level);
   return {
     variant,
     level: saved.level,
+    grade: def.grade,
     seed: saved.seed,
     bag: saved.bag,
     states,
     moves,
-    hintBudget: getLevel(variant, saved.level).hintBudget,
+    hintBudget: def.hintBudget,
     hintsUsed: saved.hintsUsed,
   };
 }
@@ -125,6 +131,7 @@ function begin(variant: VariantId, drawMode: number): GameData {
     return {
       variant,
       level: 1,
+      grade: 'easy',
       seed: 0,
       bag: {},
       states: [],
@@ -373,6 +380,7 @@ export function useGame(initialVariant?: VariantId): Game {
     supported,
     model,
     level: data.level,
+    grade: data.grade,
     score: current ? scoreOf(current) : 0,
     won,
     canUndo: data.states.length > 1,

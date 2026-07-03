@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Solitaire.Api.Data;
 using Solitaire.Engine;
 
@@ -12,7 +13,7 @@ namespace Solitaire.Api.Auth;
 /// ranges are bounded by the DTO attributes, and every saved game is replayed
 /// through the authoritative engine to confirm the move sequence is actually legal.
 /// </summary>
-public sealed class GuestImportService(AppDbContext db)
+public sealed class GuestImportService(AppDbContext db, IStringLocalizer<ApiMessages> localizer)
 {
     private static readonly HashSet<string> AllowedStatVariants =
         new(["klondike", "spider", "freecell", "pyramid", "tripeaks"], StringComparer.Ordinal);
@@ -27,20 +28,20 @@ public sealed class GuestImportService(AppDbContext db)
         // Explicit bounds (untrusted input; nested DataAnnotations are not auto-run).
         if (data.Stats.Count > MaxEntries || data.Saves.Count > MaxEntries)
         {
-            return new ImportResult(false, "Too many entries in guest data.");
+            return new ImportResult(false, localizer["Guest.TooManyEntries"]);
         }
         foreach (var save in data.Saves)
         {
             if (save.Moves.Count > MaxMovesPerSave || save.Level < 1 || save.HintsUsed < 0)
             {
-                return new ImportResult(false, "A saved game exceeded allowed limits.");
+                return new ImportResult(false, localizer["Guest.LimitsExceeded"]);
             }
         }
         foreach (var stat in data.Stats)
         {
             if (stat.GamesPlayed < 0 || stat.Wins < 0 || stat.BestTimeMs < 0)
             {
-                return new ImportResult(false, "Invalid stat values.");
+                return new ImportResult(false, localizer["Guest.InvalidStats"]);
             }
         }
 
@@ -56,11 +57,11 @@ public sealed class GuestImportService(AppDbContext db)
         {
             if (!AllowedStatVariants.Contains(stat.Variant))
             {
-                return new ImportResult(false, $"Unknown variant '{stat.Variant}'.");
+                return new ImportResult(false, localizer["Guest.UnknownVariant", stat.Variant]);
             }
             if (stat.Wins > stat.GamesPlayed)
             {
-                return new ImportResult(false, "Wins cannot exceed games played.");
+                return new ImportResult(false, localizer["Guest.WinsExceedPlayed"]);
             }
         }
 
@@ -69,7 +70,7 @@ public sealed class GuestImportService(AppDbContext db)
             // Only variants with a real engine can be persisted/validated.
             if (!SolitaireEngines.TryGet(save.Variant, out var engine))
             {
-                return new ImportResult(false, $"Unsupported save variant '{save.Variant}'.");
+                return new ImportResult(false, localizer["Guest.UnsupportedVariant", save.Variant]);
             }
 
             ReplayOutcome outcome;
@@ -79,12 +80,12 @@ public sealed class GuestImportService(AppDbContext db)
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
             {
-                return new ImportResult(false, "A saved game had invalid options or moves.");
+                return new ImportResult(false, localizer["Guest.InvalidSaveData"]);
             }
 
             if (!outcome.AllMovesLegal)
             {
-                return new ImportResult(false, "A saved game contained an illegal move.");
+                return new ImportResult(false, localizer["Guest.IllegalMove"]);
             }
         }
 

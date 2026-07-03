@@ -1,162 +1,32 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import en from './locales/en.json';
+import tr from './locales/tr.json';
 
-// Localization bootstrap. Two languages ship for now (English + Turkish); the
-// active language is driven by player settings.
-const resources = {
-  en: {
-    translation: {
-      brand: 'Solitaire',
-      menu: {
-        kicker: 'The card table',
-        titleA: 'Soli',
-        titleB: 'taire',
-        tagline: 'A deck, a deal, and a quiet hour. Pick a game and play.',
-        choose: 'Choose a game',
-        play: 'Deal new game',
-        settings: 'Settings',
-        saved: 'Saved games',
-        mostPopular: 'Most popular',
-        drawNote: 'Draw {{count}} · {{variant}}',
-      },
-      settings: {
-        title: 'Settings',
-        defaultVariant: 'Default game',
-        defaultVariantHint: 'Opens first when you start.',
-        theme: 'Theme',
-        themeHint: 'Phosphor night or worn daylight.',
-        dark: 'Dark',
-        light: 'Light',
-        language: 'Language',
-        languageHint: 'Interface language.',
-        draw: 'Klondike draw',
-        drawHint: 'Cards turned from the stock.',
-        draw1: 'Draw 1',
-        draw3: 'Draw 3',
-      },
-      saved: {
-        title: 'Saved games',
-        emptyTitle: 'No saved games yet',
-        emptyBody: 'Games you pause will wait for you here.',
-        resume: 'Resume',
-        delete: 'Delete',
-        moves: '{{count}} moves',
-        stats: 'Lifetime',
-        played: 'Played',
-        wins: 'Wins',
-        winRate: 'Win rate',
-        best: 'Best',
-      },
-      game: {
-        level: 'Level {{n}}',
-        completed: 'Completed {{done}}/{{total}}',
-        undo: 'Undo',
-        hint: 'Hint',
-        newDeal: 'New deal',
-        menu: 'Menu',
-        win: 'You win',
-        winSub: 'Level cleared — onward to the next.',
-        next: 'Next deal',
-        toMenu: 'Main menu',
-        switchTitle: 'Switch game',
-        notBuilt: 'Not at this table yet',
-        notBuiltBody: 'This variant is coming soon. Play Klondike for now.',
-        playKlondike: 'Play Klondike',
-      },
-      variant: {
-        klondike: 'Klondike',
-        spider: 'Spider',
-        freecell: 'FreeCell',
-        pyramid: 'Pyramid',
-        tripeaks: 'TriPeaks',
-      },
-      a11y: {
-        back: 'Back',
-        home: 'Home',
-        toggleTheme: 'Toggle theme',
-      },
-      footer: 'Local play · the server keeps score',
-    },
-  },
-  tr: {
-    translation: {
-      brand: 'Solitaire',
-      menu: {
-        kicker: 'Kağıt masası',
-        titleA: 'Soli',
-        titleB: 'taire',
-        tagline: 'Bir deste, bir dağıtım ve sakin bir saat. Bir oyun seç ve oyna.',
-        choose: 'Bir oyun seç',
-        play: 'Yeni oyun dağıt',
-        settings: 'Ayarlar',
-        saved: 'Kayıtlı oyunlar',
-        mostPopular: 'En popüler',
-        drawNote: '{{count}}’li çekiş · {{variant}}',
-      },
-      settings: {
-        title: 'Ayarlar',
-        defaultVariant: 'Varsayılan oyun',
-        defaultVariantHint: 'Başlarken ilk bu açılır.',
-        theme: 'Tema',
-        themeHint: 'Fosfor gecesi ya da eskimiş gündüz.',
-        dark: 'Koyu',
-        light: 'Açık',
-        language: 'Dil',
-        languageHint: 'Arayüz dili.',
-        draw: 'Klondike çekiş',
-        drawHint: 'Desteden çevrilen kart sayısı.',
-        draw1: '1 çek',
-        draw3: '3 çek',
-      },
-      saved: {
-        title: 'Kayıtlı oyunlar',
-        emptyTitle: 'Henüz kayıtlı oyun yok',
-        emptyBody: 'Duraklattığın oyunlar burada seni bekler.',
-        resume: 'Devam et',
-        delete: 'Sil',
-        moves: '{{count}} hamle',
-        stats: 'Toplam',
-        played: 'Oynanan',
-        wins: 'Galibiyet',
-        winRate: 'Kazanma oranı',
-        best: 'En iyi',
-      },
-      game: {
-        level: 'Seviye {{n}}',
-        completed: 'Tamamlanan {{done}}/{{total}}',
-        undo: 'Geri al',
-        hint: 'İpucu',
-        newDeal: 'Yeni dağıt',
-        menu: 'Menü',
-        win: 'Kazandın',
-        winSub: 'Seviye geçildi — sıradakine.',
-        next: 'Yeni dağıt',
-        toMenu: 'Ana menü',
-        switchTitle: 'Oyun değiştir',
-        notBuilt: 'Bu masa henüz hazır değil',
-        notBuiltBody: 'Bu tür yakında geliyor. Şimdilik Klondike oyna.',
-        playKlondike: 'Klondike oyna',
-      },
-      variant: {
-        klondike: 'Klondike',
-        spider: 'Örümcek',
-        freecell: 'FreeCell',
-        pyramid: 'Piramit',
-        tripeaks: 'Üç Tepe',
-      },
-      a11y: {
-        back: 'Geri',
-        home: 'Ana menü',
-        toggleTheme: 'Temayı değiştir',
-      },
-      footer: 'Yerel oyun · puanı sunucu tutar',
-    },
-  },
-} as const;
+// Reads the persisted language from the localStorage settings mirror so the very
+// first render is already in the player's language (IndexedDB hydration keeps the
+// mirror in sync; SettingsProvider drives changes from then on, without reload).
+function initialLanguage(): string {
+  try {
+    const raw = localStorage.getItem('solitaire:settings');
+    if (raw !== null) {
+      const settings = JSON.parse(raw) as { language?: string };
+      if (settings.language === 'tr' || settings.language === 'en') {
+        return settings.language;
+      }
+    }
+  } catch {
+    /* fall through to default */
+  }
+  return 'en';
+}
 
 void i18n.use(initReactI18next).init({
-  resources,
-  lng: 'en',
+  resources: {
+    en: { translation: en },
+    tr: { translation: tr },
+  },
+  lng: initialLanguage(),
   fallbackLng: 'en',
   interpolation: {
     // React already escapes values against XSS.

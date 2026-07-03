@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Auth.InvalidCredentials" xml:space="preserve">
+    <value>Invalid username/email or password.</value>
+  </data>
+  <data name="Auth.AccountLocked" xml:space="preserve">
+    <value>Account temporarily locked due to repeated failed attempts.</value>
+  </data>
+  <data name="Auth.InvalidAntiForgery" xml:space="preserve">
+    <value>Invalid anti-forgery token.</value>
+  </data>
+
+  <data name="Validation.Required" xml:space="preserve">
+    <value>This field is required.</value>
+  </data>
+  <data name="Validation.Username.Length" xml:space="preserve">
+    <value>Username must be 3–32 characters.</value>
+  </data>
+  <data name="Validation.Username.Format" xml:space="preserve">
+    <value>Username may contain letters, digits, and . _ -</value>
+  </data>
+  <data name="Validation.Email.Invalid" xml:space="preserve">
+    <value>Enter a valid email address.</value>
+  </data>
+  <data name="Validation.Password.Length" xml:space="preserve">
+    <value>Password must be 8–128 characters.</value>
+  </data>
+
+  <data name="Guest.TooManyEntries" xml:space="preserve">
+    <value>Too many entries in guest data.</value>
+  </data>
+  <data name="Guest.LimitsExceeded" xml:space="preserve">
+    <value>A saved game exceeded allowed limits.</value>
+  </data>
+  <data name="Guest.InvalidStats" xml:space="preserve">
+    <value>Invalid stat values.</value>
+  </data>
+  <data name="Guest.UnknownVariant" xml:space="preserve">
+    <value>Unknown variant '{0}'.</value>
+  </data>
+  <data name="Guest.UnsupportedVariant" xml:space="preserve">
+    <value>Unsupported save variant '{0}'.</value>
+  </data>
+  <data name="Guest.WinsExceedPlayed" xml:space="preserve">
+    <value>Wins cannot exceed games played.</value>
+  </data>
+  <data name="Guest.InvalidSaveData" xml:space="preserve">
+    <value>A saved game had invalid options or moves.</value>
+  </data>
+  <data name="Guest.IllegalMove" xml:space="preserve">
+    <value>A saved game contained an illegal move.</value>
+  </data>
+  <data name="Guest.Invalid" xml:space="preserve">
+    <value>Invalid guest data.</value>
+  </data>
+
+  <data name="Submit.Duplicate" xml:space="preserve">
+    <value>This game has already been submitted.</value>
+  </data>
+  <data name="Submit.Failed" xml:space="preserve">
+    <value>Submission failed verification.</value>
+  </data>
+  <data name="Leaderboard.UnknownVariant" xml:space="preserve">
+    <value>Unknown variant '{0}'.</value>
+  </data>
+
+  <data name="Identity.DuplicateUserName" xml:space="preserve">
+    <value>Username '{0}' is already taken.</value>
+  </data>
+  <data name="Identity.DuplicateEmail" xml:space="preserve">
+    <value>Email '{0}' is already registered.</value>
+  </data>
+  <data name="Identity.InvalidUserName" xml:space="preserve">
+    <value>Username '{0}' is invalid: only letters and digits are allowed.</value>
+  </data>
+  <data name="Identity.InvalidEmail" xml:space="preserve">
+    <value>Email '{0}' is invalid.</value>
+  </data>
+  <data name="Identity.PasswordTooShort" xml:space="preserve">
+    <value>Passwords must be at least {0} characters.</value>
+  </data>
+  <data name="Identity.PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>Passwords must contain at least one non-alphanumeric character.</value>
+  </data>
+  <data name="Identity.PasswordRequiresDigit" xml:space="preserve">
+    <value>Passwords must contain at least one digit (0–9).</value>
+  </data>
+  <data name="Identity.PasswordRequiresLower" xml:space="preserve">
+    <value>Passwords must contain at least one lowercase letter (a–z).</value>
+  </data>
+  <data name="Identity.PasswordRequiresUpper" xml:space="preserve">
+    <value>Passwords must contain at least one uppercase letter (A–Z).</value>
+  </data>
+</root>

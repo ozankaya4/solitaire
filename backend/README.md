@@ -94,6 +94,18 @@ content type). Anti-forgery tokens (double-submit cookie) are additionally wired
 (e.g. `POST /api/auth/logout`). Login/register are exempt (pre-session; login CSRF
 is not meaningful and is covered by `SameSite=Strict`).
 
+## Localization
+
+Server-returned error/validation messages are localized via resource files
+(`Resources/ApiMessages.resx` = English default, `ApiMessages.tr.resx` = Turkish)
+and `IStringLocalizer`. The request culture comes from the standard providers —
+in practice the **`Accept-Language`** header (`en` default, `tr` supported).
+Covered: login/lockout/anti-forgery errors, DataAnnotations messages (attribute
+`ErrorMessage`s are resource keys localized in `TryValidate`), Identity errors
+(`LocalizedIdentityErrorDescriber` — duplicate username/email, password policy),
+guest-import errors, and leaderboard submission errors. Add a language by adding
+an `ApiMessages.<culture>.resx` and listing the culture in `Program.cs`.
+
 ## Endpoints
 
 - `POST /api/auth/register` — `{ username, email, password, guestData? }`. Creates

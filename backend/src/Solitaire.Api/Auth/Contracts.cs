@@ -3,21 +3,24 @@ using Solitaire.Engine;
 
 namespace Solitaire.Api.Auth;
 
+// Validation messages are resource KEYS (Resources/ApiMessages*.resx); the
+// endpoints' TryValidate localizes them into the request culture.
+
 /// <summary>Registration payload. Optionally carries a guest's local data to migrate.</summary>
 public sealed class RegisterRequest
 {
-    [Required]
-    [StringLength(32, MinimumLength = 3)]
-    [RegularExpression(@"^[a-zA-Z0-9_.\-]+$", ErrorMessage = "Username may contain letters, digits, and . _ -")]
+    [Required(ErrorMessage = "Validation.Required")]
+    [StringLength(32, MinimumLength = 3, ErrorMessage = "Validation.Username.Length")]
+    [RegularExpression(@"^[a-zA-Z0-9_.\-]+$", ErrorMessage = "Validation.Username.Format")]
     public string Username { get; set; } = string.Empty;
 
-    [Required]
-    [EmailAddress]
-    [StringLength(256)]
+    [Required(ErrorMessage = "Validation.Required")]
+    [EmailAddress(ErrorMessage = "Validation.Email.Invalid")]
+    [StringLength(256, ErrorMessage = "Validation.Email.Invalid")]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(128, MinimumLength = 8)]
+    [Required(ErrorMessage = "Validation.Required")]
+    [StringLength(128, MinimumLength = 8, ErrorMessage = "Validation.Password.Length")]
     public string Password { get; set; } = string.Empty;
 
     /// <summary>Optional one-time migration of the guest's local stats/saves.</summary>
@@ -27,12 +30,12 @@ public sealed class RegisterRequest
 /// <summary>Login payload — accepts either a username or an email.</summary>
 public sealed class LoginRequest
 {
-    [Required]
-    [StringLength(256)]
+    [Required(ErrorMessage = "Validation.Required")]
+    [StringLength(256, ErrorMessage = "Validation.Required")]
     public string UsernameOrEmail { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(128)]
+    [Required(ErrorMessage = "Validation.Required")]
+    [StringLength(128, ErrorMessage = "Validation.Required")]
     public string Password { get; set; } = string.Empty;
 
     public bool RememberMe { get; set; }

@@ -1,7 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Solitaire.Api.Auth;
 using Solitaire.Api.Data;
 using Solitaire.Engine;
 
@@ -28,10 +29,11 @@ public static class LeaderboardEndpoints
         GameVerificationService verification,
         UserManager<ApplicationUser> userManager,
         AppDbContext db,
+        IStringLocalizer<ApiMessages> localizer,
         ClaimsPrincipal principal,
         CancellationToken ct)
     {
-        if (!TryValidate(request, out var errors))
+        if (!AuthEndpoints.TryValidate(request, localizer, out var errors))
         {
             return Results.ValidationProblem(errors);
         }
@@ -50,9 +52,9 @@ public static class LeaderboardEndpoints
                 result.Entry.TimeMs,
                 await RankOfAsync(db, result.Entry.Variant, userId, ct) ?? 0)),
             GameVerificationService.Verdict.Duplicate => Results.Conflict(
-                new { error = "This game has already been submitted." }),
+                new { error = localizer["Submit.Duplicate"].Value }),
             // The submission was understood but failed verification — say only that.
-            _ => Results.UnprocessableEntity(new { error = "Submission failed verification." }),
+            _ => Results.UnprocessableEntity(new { error = localizer["Submit.Failed"].Value }),
         };
     }
 
@@ -61,12 +63,13 @@ public static class LeaderboardEndpoints
         int? top,
         AppDbContext db,
         UserManager<ApplicationUser> userManager,
+        IStringLocalizer<ApiMessages> localizer,
         ClaimsPrincipal principal,
         CancellationToken ct)
     {
         if (!SolitaireEngines.TryGet(variant, out var engine))
         {
-            return Results.NotFound(new { error = $"Unknown variant '{variant}'." });
+            return Results.NotFound(new { error = localizer["Leaderboard.UnknownVariant", variant].Value });
         }
 
         int take = Math.Clamp(top ?? 10, 1, MaxTop);
@@ -136,16 +139,5 @@ public static class LeaderboardEndpoints
             .Select(g => g.Max(e => e.Score))
             .CountAsync(s => s > myBest.Value, ct);
         return better + 1;
-    }
-
-    private static bool TryValidate(object model, out Dictionary<string, string[]> errors)
-    {
-        var results = new List<ValidationResult>();
-        var ok = Validator.TryValidateObject(model, new ValidationContext(model), results, validateAllProperties: true);
-        errors = results
-            .SelectMany(r => (r.MemberNames.Any() ? r.MemberNames : [""]).Select(m => (Member: m, r.ErrorMessage)))
-            .GroupBy(x => x.Member, x => x.ErrorMessage ?? "Invalid.")
-            .ToDictionary(g => g.Key, g => g.ToArray());
-        return ok;
     }
 }

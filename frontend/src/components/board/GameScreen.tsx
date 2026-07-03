@@ -60,7 +60,7 @@ export function GameScreen({
         <div className="gamebar__meta">
           <span className="gamebar__variant">{t(`variant.${game.variant}`)}</span>
           <span className="gamebar__sub">
-            {t('game.level', { n: game.level })} · {game.score}
+            {t('game.level', { n: game.level })} · {t(`difficulty.${game.grade}`)} · {game.score}
           </span>
         </div>
 

@@ -504,6 +504,23 @@
   color: var(--color-ink);
 }
 
+/* -- Legal pages ------------------------------------------------------------ */
+.legal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.legal__para {
+  font-size: var(--text-sm);
+  color: var(--color-ink-dim);
+  line-height: var(--leading);
+}
+
+.legal__para:first-child {
+  color: var(--color-ink);
+}
+
 /* -- Screen header with back ---------------------------------------------- */
 .screen__head {
   display: flex;

@@ -1,0 +1,113 @@
+{
+  "brand": "Solitaire",
+  "menu": {
+    "kicker": "Kağıt masası",
+    "titleA": "Soli",
+    "titleB": "taire",
+    "tagline": "Bir deste, bir dağıtım ve sakin bir saat. Bir oyun seç ve oyna.",
+    "choose": "Bir oyun seç",
+    "play": "Yeni oyun dağıt",
+    "settings": "Ayarlar",
+    "saved": "Kayıtlı oyunlar",
+    "mostPopular": "En popüler",
+    "drawNote": "{{count}}’li çekiş · {{variant}}"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "defaultVariant": "Varsayılan oyun",
+    "defaultVariantHint": "Başlarken ilk bu açılır.",
+    "theme": "Tema",
+    "themeHint": "Fosfor gecesi ya da eskimiş gündüz.",
+    "dark": "Koyu",
+    "light": "Açık",
+    "language": "Dil",
+    "languageHint": "Arayüz dili.",
+    "english": "English",
+    "turkish": "Türkçe",
+    "draw": "Klondike çekiş",
+    "drawHint": "Desteden çevrilen kart sayısı.",
+    "draw1": "1 çek",
+    "draw3": "3 çek",
+    "legal": "Küçük yazılar",
+    "privacyLink": "Gizlilik",
+    "termsLink": "Koşullar"
+  },
+  "saved": {
+    "title": "Kayıtlı oyunlar",
+    "emptyTitle": "Henüz kayıtlı oyun yok",
+    "emptyBody": "Duraklattığın oyunlar burada seni bekler.",
+    "resume": "Devam et",
+    "delete": "Sil",
+    "moves": "{{count}} hamle",
+    "stats": "Toplam",
+    "played": "Oynanan",
+    "wins": "Galibiyet",
+    "winRate": "Kazanma oranı",
+    "best": "En iyi"
+  },
+  "game": {
+    "level": "Seviye {{n}}",
+    "completed": "Tamamlanan {{done}}/{{total}}",
+    "undo": "Geri al",
+    "hint": "İpucu",
+    "newDeal": "Yeni dağıt",
+    "menu": "Menü",
+    "stock": "Deste",
+    "win": "Kazandın",
+    "winSub": "Seviye geçildi — sıradakine.",
+    "next": "Yeni dağıt",
+    "toMenu": "Ana menü",
+    "switchTitle": "Oyun değiştir",
+    "notBuilt": "Bu masa henüz hazır değil",
+    "notBuiltBody": "Bu tür yakında geliyor. Şimdilik Klondike oyna.",
+    "playKlondike": "Klondike oyna"
+  },
+  "difficulty": {
+    "easy": "Kolay",
+    "medium": "Orta",
+    "hard": "Zor"
+  },
+  "cards": {
+    "suit": {
+      "clubs": "Sinek",
+      "diamonds": "Karo",
+      "hearts": "Kupa",
+      "spades": "Maça"
+    },
+    "rank": {
+      "r1": "As",
+      "r11": "Vale",
+      "r12": "Kız",
+      "r13": "Papaz"
+    },
+    "name": "{{suit}} {{rank}}",
+    "faceDown": "Kapalı kart"
+  },
+  "variant": {
+    "klondike": "Klondike",
+    "spider": "Örümcek",
+    "freecell": "FreeCell",
+    "pyramid": "Piramit",
+    "tripeaks": "Üç Tepe"
+  },
+  "privacy": {
+    "title": "Gizlilik",
+    "p1": "Solitaire önce-yerel çalışır. Misafir olarak her şey — oyunların, ilerlemen, istatistiklerin ve ayarların — tarayıcında (IndexedDB) kalır. Sunucuya hiçbir şey gönderilmez.",
+    "p2": "Hesap oluşturursan, küresel skor tablosunu işletebilmek için kullanıcı adını, e-posta adresini ve doğrulanmış oyun sonuçlarını (skor, süre, hamle sayısı) saklarız.",
+    "p3": "Reklam, izleyici veya analiz aracı yoktur. E-postan yalnızca hesabını tanımlamak için kullanılır; hiçbir zaman herkese açık gösterilmez ve kimseyle paylaşılmaz.",
+    "p4": "Kayıtlı oyunlarını ve istatistiklerini istediğin an uygulamadan silebilirsin. Hesabını silmek sunucudaki verilerini de kaldırır."
+  },
+  "terms": {
+    "title": "Koşullar",
+    "p1": "Solitaire olduğu gibi, keyif için sunulur; hiçbir garanti verilmez.",
+    "p2": "Kişi başına bir hesap. Skor tablosuna değiştirilmiş veya otomatikleştirilmiş oyun sonuçları göndermek yasaktır; sunucu gönderilen her oyunu bağımsız olarak doğrular ve yeniden üretemediği hiçbir sonucu kabul etmez.",
+    "p3": "Hizmeti kötüye kullanan skor kayıtlarını veya hesapları kaldırabiliriz.",
+    "p4": "Bu koşullar oyun geliştikçe değişebilir; önemli değişiklikler uygulamada duyurulur."
+  },
+  "a11y": {
+    "back": "Geri",
+    "home": "Ana menü",
+    "toggleTheme": "Temayı değiştir"
+  },
+  "footer": "Yerel oyun · puanı sunucu tutar"
+}

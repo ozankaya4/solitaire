@@ -1,0 +1,113 @@
+{
+  "brand": "Solitaire",
+  "menu": {
+    "kicker": "The card table",
+    "titleA": "Soli",
+    "titleB": "taire",
+    "tagline": "A deck, a deal, and a quiet hour. Pick a game and play.",
+    "choose": "Choose a game",
+    "play": "Deal new game",
+    "settings": "Settings",
+    "saved": "Saved games",
+    "mostPopular": "Most popular",
+    "drawNote": "Draw {{count}} · {{variant}}"
+  },
+  "settings": {
+    "title": "Settings",
+    "defaultVariant": "Default game",
+    "defaultVariantHint": "Opens first when you start.",
+    "theme": "Theme",
+    "themeHint": "Phosphor night or worn daylight.",
+    "dark": "Dark",
+    "light": "Light",
+    "language": "Language",
+    "languageHint": "Interface language.",
+    "english": "English",
+    "turkish": "Türkçe",
+    "draw": "Klondike draw",
+    "drawHint": "Cards turned from the stock.",
+    "draw1": "Draw 1",
+    "draw3": "Draw 3",
+    "legal": "Small print",
+    "privacyLink": "Privacy",
+    "termsLink": "Terms"
+  },
+  "saved": {
+    "title": "Saved games",
+    "emptyTitle": "No saved games yet",
+    "emptyBody": "Games you pause will wait for you here.",
+    "resume": "Resume",
+    "delete": "Delete",
+    "moves": "{{count}} moves",
+    "stats": "Lifetime",
+    "played": "Played",
+    "wins": "Wins",
+    "winRate": "Win rate",
+    "best": "Best"
+  },
+  "game": {
+    "level": "Level {{n}}",
+    "completed": "Completed {{done}}/{{total}}",
+    "undo": "Undo",
+    "hint": "Hint",
+    "newDeal": "New deal",
+    "menu": "Menu",
+    "stock": "Stock",
+    "win": "You win",
+    "winSub": "Level cleared — onward to the next.",
+    "next": "Next deal",
+    "toMenu": "Main menu",
+    "switchTitle": "Switch game",
+    "notBuilt": "Not at this table yet",
+    "notBuiltBody": "This variant is coming soon. Play Klondike for now.",
+    "playKlondike": "Play Klondike"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "cards": {
+    "suit": {
+      "clubs": "Clubs",
+      "diamonds": "Diamonds",
+      "hearts": "Hearts",
+      "spades": "Spades"
+    },
+    "rank": {
+      "r1": "Ace",
+      "r11": "Jack",
+      "r12": "Queen",
+      "r13": "King"
+    },
+    "name": "{{rank}} of {{suit}}",
+    "faceDown": "Face-down card"
+  },
+  "variant": {
+    "klondike": "Klondike",
+    "spider": "Spider",
+    "freecell": "FreeCell",
+    "pyramid": "Pyramid",
+    "tripeaks": "TriPeaks"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "p1": "Solitaire is local-first. As a guest, everything — your games, progress, statistics, and settings — stays in your browser (IndexedDB). Nothing is sent to a server.",
+    "p2": "If you create an account, we store your username, your email address, and your verified game results (scores, times, move counts) in order to run the global leaderboard.",
+    "p3": "There are no ads, trackers, or analytics. Your email is used only to identify your account; it is never shown publicly or shared with anyone.",
+    "p4": "You can delete your saved games and statistics from the app at any time. Deleting your account removes your server-side data as well."
+  },
+  "terms": {
+    "title": "Terms",
+    "p1": "Solitaire is provided as-is, for fun, without warranty of any kind.",
+    "p2": "One account per person. Submitting manipulated or automated game results to the leaderboard is not allowed; the server independently verifies every submitted game and rejects anything it cannot reproduce.",
+    "p3": "We may remove leaderboard entries or accounts that abuse the service.",
+    "p4": "These terms may evolve as the game grows; significant changes will be announced in the app."
+  },
+  "a11y": {
+    "back": "Back",
+    "home": "Home",
+    "toggleTheme": "Toggle theme"
+  },
+  "footer": "Local play · the server keeps score"
+}

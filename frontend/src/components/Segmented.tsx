@@ -6,6 +6,8 @@ export interface SegmentedOption<T extends string> {
   readonly value: T;
   readonly label: string;
   readonly icon?: ReactNode;
+  /** BCP-47 tag when the label's language differs from the UI (fixes casing, e.g. Turkish İ). */
+  readonly lang?: string;
 }
 
 interface SegmentedProps<T extends string> {
@@ -38,7 +40,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(option.value)}
         >
           {option.icon}
-          <span>{option.label}</span>
+          <span lang={option.lang}>{option.label}</span>
         </button>
       ))}
     </div>

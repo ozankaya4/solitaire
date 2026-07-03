@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Solitaire.Api.Data;
 
 namespace Solitaire.Api.Auth;
@@ -44,9 +45,10 @@ public static class AuthEndpoints
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         GuestImportService guestImport,
+        IStringLocalizer<ApiMessages> localizer,
         CancellationToken ct)
     {
-        if (!TryValidate(request, out var errors))
+        if (!TryValidate(request, localizer, out var errors))
         {
             return Results.ValidationProblem(errors);
         }
@@ -66,7 +68,7 @@ public static class AuthEndpoints
                 // Keep registration atomic: undo the account if the payload was bad.
                 await userManager.DeleteAsync(user);
                 return Results.ValidationProblem(
-                    new Dictionary<string, string[]> { ["guestData"] = [import.Error ?? "Invalid guest data."] });
+                    new Dictionary<string, string[]> { ["guestData"] = [import.Error ?? localizer["Guest.Invalid"]] });
             }
         }
 
@@ -77,9 +79,10 @@ public static class AuthEndpoints
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        IStringLocalizer<ApiMessages> localizer)
     {
-        if (!TryValidate(request, out var errors))
+        if (!TryValidate(request, localizer, out var errors))
         {
             return Results.ValidationProblem(errors);
         }
@@ -89,7 +92,8 @@ public static class AuthEndpoints
             ?? await userManager.FindByEmailAsync(request.UsernameOrEmail);
         if (user is null)
         {
-            return Results.Unauthorized(); // generic — do not reveal which field was wrong
+            // Generic — do not reveal which field was wrong.
+            return InvalidCredentials(localizer);
         }
 
         var result = await signInManager.PasswordSignInAsync(
@@ -103,14 +107,18 @@ public static class AuthEndpoints
         {
             return Results.Problem(
                 statusCode: StatusCodes.Status423Locked,
-                title: "Account temporarily locked due to repeated failed attempts.");
+                title: localizer["Auth.AccountLocked"]);
         }
-        return Results.Unauthorized();
+        return InvalidCredentials(localizer);
     }
+
+    private static IResult InvalidCredentials(IStringLocalizer<ApiMessages> localizer) =>
+        Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: localizer["Auth.InvalidCredentials"]);
 
     private static async Task<IResult> LogoutAsync(
         SignInManager<ApplicationUser> signInManager,
         IAntiforgery antiforgery,
+        IStringLocalizer<ApiMessages> localizer,
         HttpContext http)
     {
         try
@@ -119,7 +127,7 @@ public static class AuthEndpoints
         }
         catch (AntiforgeryValidationException)
         {
-            return Results.BadRequest(new { error = "Invalid anti-forgery token." });
+            return Results.BadRequest(new { error = localizer["Auth.InvalidAntiForgery"].Value });
         }
 
         await signInManager.SignOutAsync();
@@ -136,13 +144,20 @@ public static class AuthEndpoints
             : Results.Ok(new UserResponse(user.Id, user.UserName, user.Email));
     }
 
-    private static bool TryValidate(object model, out Dictionary<string, string[]> errors)
+    /// <summary>
+    /// Runs DataAnnotations validation and localizes messages: attribute
+    /// ErrorMessages are resource keys, resolved into the request culture here.
+    /// </summary>
+    internal static bool TryValidate(
+        object model,
+        IStringLocalizer<ApiMessages> localizer,
+        out Dictionary<string, string[]> errors)
     {
         var results = new List<ValidationResult>();
         var ok = Validator.TryValidateObject(model, new ValidationContext(model), results, validateAllProperties: true);
         errors = results
             .SelectMany(r => (r.MemberNames.Any() ? r.MemberNames : [""]).Select(m => (Member: m, r.ErrorMessage)))
-            .GroupBy(x => x.Member, x => x.ErrorMessage ?? "Invalid.")
+            .GroupBy(x => x.Member, x => localizer[x.ErrorMessage ?? "Validation.Required"].Value)
             .ToDictionary(g => g.Key, g => g.ToArray());
         return ok;
     }

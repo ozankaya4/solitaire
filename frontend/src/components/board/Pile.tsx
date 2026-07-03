@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, type PanInfo } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Card } from './Card';
 import { RefreshIcon } from '../../icons/icons';
 import type { Pile as PileModel, RenderCard } from '../../board/boardModel';
@@ -98,6 +99,7 @@ function CardSlot({
 }
 
 export function Pile({ pile, game, reduce, enableLayout, dealStart }: PileProps) {
+  const { t } = useTranslation();
   const isHint = game.hint?.sourceId === pile.id || game.hint?.destId === pile.id;
   const empty = pile.cards.length === 0;
 
@@ -110,7 +112,7 @@ export function Pile({ pile, game, reduce, enableLayout, dealStart }: PileProps)
         onClick={() => game.onStock()}
         role="button"
         tabIndex={0}
-        aria-label="Stock"
+        aria-label={t('game.stock')}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') game.onStock();
         }}

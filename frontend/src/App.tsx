@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { ScreenName, VariantId } from './app/types';
 import { GameScreen } from './components/board/GameScreen';
+import { LegalScreen } from './components/LegalScreen';
 import { MainMenu } from './components/MainMenu';
 import { SavedGamesScreen } from './components/SavedGamesScreen';
 import { SettingsScreen } from './components/SettingsScreen';
@@ -50,10 +51,20 @@ export default function App() {
               onOpenSaved={() => setScreen('saved')}
             />
           )}
-          {screen === 'settings' && <SettingsScreen onBack={() => setScreen('menu')} />}
+          {screen === 'settings' && (
+            <SettingsScreen
+              onBack={() => setScreen('menu')}
+              onOpenPrivacy={() => setScreen('privacy')}
+              onOpenTerms={() => setScreen('terms')}
+            />
+          )}
           {screen === 'saved' && (
             <SavedGamesScreen onBack={() => setScreen('menu')} onResume={(v) => openGame(v)} />
           )}
+          {screen === 'privacy' && (
+            <LegalScreen page="privacy" onBack={() => setScreen('settings')} />
+          )}
+          {screen === 'terms' && <LegalScreen page="terms" onBack={() => setScreen('settings')} />}
         </motion.main>
       </AnimatePresence>
     </div>

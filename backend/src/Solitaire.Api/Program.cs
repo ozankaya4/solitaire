@@ -32,6 +32,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     }
 });
 
+// -- Localization: en (default) + tr, resolved per request (Accept-Language) --
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+string[] supportedCultures = ["en", "tr"];
+
 // -- Identity (registration, login, password hashing, lockout — defaults) ----
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -41,6 +45,7 @@ builder.Services
         // Password + lockout policies use Identity's secure defaults.
     })
     .AddEntityFrameworkStores<AppDbContext>()
+    .AddErrorDescriber<LocalizedIdentityErrorDescriber>()
     .AddDefaultTokenProviders();
 
 // Cookie session: HttpOnly + Secure + SameSite=Strict; return 401/403 (no redirects).
@@ -120,6 +125,10 @@ if (!isTesting)
 }
 
 app.UseSecurityHeaders();
+app.UseRequestLocalization(options =>
+{
+    options.SetDefaultCulture("en").AddSupportedCultures(supportedCultures).AddSupportedUICultures(supportedCultures);
+});
 app.UseCors(CorsPolicy);
 app.UseRateLimiter();
 app.UseAuthentication();
