@@ -102,4 +102,24 @@ is not meaningful and is covered by `SameSite=Strict`).
 - `POST /api/auth/logout` — authenticated + anti-forgery.
 - `GET /api/auth/me` — current user (401 if unauthenticated).
 - `GET /api/auth/csrf` — issues an anti-forgery token.
+- `POST /api/games/submit` — authenticated; submits a completed game
+  `{ variant, seed, options, moves[], claimedScore, claimedTimeMs }`. The server
+  **replays the move log through Solitaire.Engine** and only records the result if
+  the replay is a legal win whose score matches the claim exactly and whose
+  duration is plausible (≥ 100 ms/move, ≤ 24 h). Duplicates → 409; failed
+  verification → 422 (reason logged server-side, without PII).
+- `GET /api/leaderboard/{variant}?top=N` — public; top N best-per-player scores +
+  the signed-in requester's rank/best.
 - `GET /health`.
+
+## Leaderboard verification (anti-cheat)
+
+The server never trusts a client-reported score. `GameVerificationService`:
+1. resolves the variant's engine (`SolitaireEngines`) — unknown variants rejected;
+2. rejects implausible timings (faster than 100 ms/move, or > 24 h);
+3. **replays** `{seed, options, moves}` — any illegal move or a non-win rejects;
+4. requires the recomputed score to equal `claimedScore` exactly;
+5. dedupes via a canonical SHA-256 of (variant, seed, options, moves) per user;
+6. only then records the entry and updates lifetime stats (wins, games, best time).
+Submissions are authenticated-only and rate-limited per account (12/min).
+Rejections are logged (verdict, user id, variant, seed — no PII, no move log).

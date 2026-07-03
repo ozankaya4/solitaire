@@ -15,6 +15,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
 
     public DbSet<PlayerStatEntity> PlayerStats => Set<PlayerStatEntity>();
 
+    public DbSet<LeaderboardEntryEntity> LeaderboardEntries => Set<LeaderboardEntryEntity>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -34,6 +36,21 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
         {
             entity.HasIndex(e => new { e.UserId, e.Variant }).IsUnique();
             entity.Property(e => e.Variant).HasMaxLength(32);
+            entity
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<LeaderboardEntryEntity>(entity =>
+        {
+            // Dedupe: the same verified game cannot be recorded twice for a user.
+            entity.HasIndex(e => new { e.UserId, e.GameHash }).IsUnique();
+            // Leaderboard reads: per-variant, ordered by score.
+            entity.HasIndex(e => new { e.Variant, e.Score });
+            entity.Property(e => e.Variant).HasMaxLength(32);
+            entity.Property(e => e.GameHash).HasMaxLength(64);
             entity
                 .HasOne(e => e.User)
                 .WithMany()

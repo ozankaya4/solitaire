@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Solitaire.Api.Auth;
 using Solitaire.Api.Data;
+using Solitaire.Api.Leaderboard;
 using Solitaire.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,7 +66,7 @@ var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>()
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
     policy.WithOrigins(allowedOrigins).AllowCredentials().WithMethods("GET", "POST").AllowAnyHeader()));
 
-// -- Rate limiting on auth endpoints -----------------------------------------
+// -- Rate limiting: auth (per IP) and score submissions (per account) --------
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -73,6 +74,10 @@ builder.Services.AddRateLimiter(options =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.AddPolicy("submit", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 12, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 
 // Anti-forgery (double-submit cookie) for authenticated state-changing endpoints.
@@ -85,6 +90,7 @@ builder.Services.AddAntiforgery(options =>
 });
 
 builder.Services.AddScoped<GuestImportService>();
+builder.Services.AddScoped<GameVerificationService>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
@@ -121,6 +127,7 @@ app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapAuthEndpoints();
+app.MapLeaderboardEndpoints();
 
 app.Run();
 
