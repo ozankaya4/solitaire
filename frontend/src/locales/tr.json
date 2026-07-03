@@ -91,11 +91,64 @@
     "tripeaks": "Tri-Peaks"
   },
   "privacy": {
-    "title": "Gizlilik",
-    "p1": "Solitaire öncelikli olarak yerelde çalışır. Misafir olarak her şey — oyunların, ilerlemen, istatistiklerin ve ayarların — tarayıcında (IndexedDB) kalır. Sunucuya hiçbir şey gönderilmez.",
-    "p2": "Hesap oluşturursan, küresel skor tablosunu işletebilmek için kullanıcı adını, e-posta adresini ve doğrulanmış oyun sonuçlarını (skor, süre, hamle sayısı) saklarız.",
-    "p3": "Reklam, takip veya analiz aracı yoktur. E-postan yalnızca hesabını tanımlamak için kullanılır; hiçbir zaman herkese açık gösterilmez ve kimseyle paylaşılmaz.",
-    "p4": "Kayıtlı oyunlarını ve istatistiklerini istediğin an uygulamadan silebilirsin. Hesabını silmek sunucudaki verilerini de kaldırır."
+    "title": "Gizlilik politikası",
+    "updated": "Son güncelleme: [YAYINDA TARİH GİRİN]",
+    "sections": [
+      {
+        "h": "Kısaca",
+        "b": "Solitaire öncelikli olarak yerelde çalışır. Misafir olarak her şey — oyunların, ilerlemen, istatistiklerin ve ayarların — tarayıcında kalır ve sunucuya hiçbir şey gönderilmez. Hesap oluşturursan yalnızca küresel skor tablosunu işletmek için gereken en az veriyi saklarız. Reklam, takip veya analiz aracı yoktur."
+      },
+      {
+        "h": "Sorumlu kim",
+        "b": "Bu uygulamayı Solitaire projesi işletir ve veri sorumlusudur (KVKK “veri sorumlusu” / GDPR “controller”). İletişim: [GERÇEK BİR İLETİŞİM ADRESİ EKLEYİN]. [Yayından önce belirli bir tüzel kişi ve iletişim bilgisi girilmelidir.]"
+      },
+      {
+        "h": "Misafir olarak oynamak",
+        "b": "Hesap olmadan; oyunların, kayıtlı ilerlemen, istatistiklerin ve ayarların yalnızca cihazında (tarayıcının IndexedDB/localStorage'ında) saklanır. Bu veriler cihazından hiç çıkmaz, biz göremeyiz ve tarayıcı depolamanı temizlemek onları siler."
+      },
+      {
+        "h": "Hesap için ne saklarız",
+        "b": "Hesap verileri: kullanıcı adın, e-posta adresin, güvenli biçimde özetlenmiş (hash'lenmiş) parolan (parolanın kendisi asla değil) ve hesap oluşturma tarihi. Oyun verileri: sunucuda doğrulanmış oyun sonuçların (skor, süre, hamle sayısı), toplam istatistiklerin ve hesabına kaydetmeyi seçtiğin oyunlar."
+      },
+      {
+        "h": "Neden işliyoruz ve hukuki dayanak",
+        "b": "Bu verileri yalnızca oyunu sunmak ve kaydolduğun skor tablosunu işletmek için işleriz. KVKK: bir sözleşmenin kurulması ve ifası için gerekli olması (m. 5/2-c) ve adil bir skor tablosuna ilişkin meşru menfaatimiz (m. 5/2-f). GDPR: sözleşmenin ifası (m. 6(1)(b)) ve meşru menfaatler (m. 6(1)(f)). [Kesin hukuki dayanaklar bir avukata doğrulatılmalıdır.]"
+      },
+      {
+        "h": "Çerezler ve yerel depolama",
+        "b": "Yalnızca kesinlikle gerekli, birinci taraf çerezler kullanırız ve bunları yalnızca giriş yaptıktan sonra: bir kimlik doğrulama çerezi (oturumunu açık tutar) ve bir istek sahtekârlığı (anti-forgery) çerezi (CSRF'ye karşı korur). Reklam veya analiz çerezi yoktur. Bu çerezler talep ettiğin bir hizmet için kesinlikle gerekli olduğundan çerez onayı bandı gerekmez. Misafirlere hiç çerez verilmez. Ayarlar ve oyun verileri, oyunun kendisini çalıştırmak için tarayıcının yerel depolamasında tutulur."
+      },
+      {
+        "h": "Haklarınız",
+        "b": "Uygulama içinden tüm verilerini JSON olarak dışa aktarabilir (erişim/taşınabilirlik hakkı) ve hesabınla birlikte ilişkili tüm kayıtları kalıcı olarak silebilirsin (silme hakkı). KVKK m. 11 ve GDPR m. 15–21 uyarınca ayrıca düzeltme, kısıtlama ve itiraz haklarına ve bir denetim makamına şikâyette bulunma hakkına sahipsin — Türkiye'de Kişisel Verileri Koruma Kurumu (KVKK Kurumu)."
+      },
+      {
+        "h": "Ne kadar süre saklarız",
+        "b": "Hesap verileri sen silene kadar saklanır. Hesabını silmek; istatistiklerini, kayıtlı oyunlarını ve skor tablosu kayıtlarını da anında ve kalıcı olarak kaldırır (art arda silme)."
+      },
+      {
+        "h": "Verilerin nerede olduğu ve aktarımlar",
+        "b": "Hesap verileri sunucumuzda [BARINDIRMA BÖLGESİ EKLEYİN] konumunda saklanır. Uygulamayı bu bölgenin dışından (örneğin AB'den) kullanırsan verilerin sınır ötesine aktarılabilir. [Sınır ötesi aktarım dayanağı — KVKK açık rıza / yeterlilik / GDPR güvenceleri — barındırma seçildikten sonra bir avukata inceletilmelidir.]"
+      },
+      {
+        "h": "Güvenlik",
+        "b": "Parolalar ASP.NET Core Identity varsayılanlarıyla özetlenir, trafik HTTPS üzerinden sunulur ve her skor tablosu gönderimi sunucuda bağımsız olarak yeniden doğrulanır; böylece değiştirilmiş bir skor kaydedilemez."
+      },
+      {
+        "h": "Çocuklar",
+        "b": "Bu oyun genel bir kitleye yöneliktir ve [YAŞ EKLEYİN] yaş altındaki çocuklara yönelik değildir. [Yaş sınırı ve varsa ebeveyn onayı, KVKK ve GDPR/hedef pazarlar için hukuki incelemeye tabidir.]"
+      },
+      {
+        "h": "Değişiklikler",
+        "b": "Bu politikayı oyun geliştikçe güncelleyebiliriz; önemli değişiklikler uygulamada duyurulur."
+      }
+    ]
+  },
+  "register": {
+    "noticeTitle": "Hesap oluşturmadan önce",
+    "notice": "Hesap oluşturmak; küresel skor tablosunda görünebilmen için kullanıcı adını, e-postanı ve sunucuda doğrulanmış oyun sonuçlarını saklar. Reklam veya takip yoktur. Verilerini istediğin an dışa aktarabilir veya silebilirsin.",
+    "acknowledge": "Kaydolarak Koşulları kabul eder ve Gizlilik politikasını onayladığını beyan edersin.",
+    "seePolicy": "Gizlilik politikasını oku"
   },
   "terms": {
     "title": "Koşullar",

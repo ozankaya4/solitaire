@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Solitaire.Api.Account;
 using Solitaire.Api.Auth;
 using Solitaire.Api.Data;
 using Solitaire.Api.Leaderboard;
@@ -137,6 +138,7 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapAuthEndpoints();
 app.MapLeaderboardEndpoints();
+app.MapAccountEndpoints();
 
 app.Run();
 

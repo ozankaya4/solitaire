@@ -91,11 +91,64 @@
     "tripeaks": "TriPeaks"
   },
   "privacy": {
-    "title": "Privacy",
-    "p1": "Solitaire is local-first. As a guest, everything — your games, progress, statistics, and settings — stays in your browser (IndexedDB). Nothing is sent to a server.",
-    "p2": "If you create an account, we store your username, your email address, and your verified game results (scores, times, move counts) in order to run the global leaderboard.",
-    "p3": "There are no ads, trackers, or analytics. Your email is used only to identify your account; it is never shown publicly or shared with anyone.",
-    "p4": "You can delete your saved games and statistics from the app at any time. Deleting your account removes your server-side data as well."
+    "title": "Privacy policy",
+    "updated": "Last updated: [SET DATE AT PUBLICATION]",
+    "sections": [
+      {
+        "h": "In short",
+        "b": "Solitaire is local-first. As a guest, everything — your games, progress, statistics, and settings — stays in your browser and is never sent to a server. If you create an account, we store only the minimum needed to run the global leaderboard. No ads, no trackers, no analytics."
+      },
+      {
+        "h": "Who is responsible",
+        "b": "The Solitaire project operates this app and is the data controller (KVKK “veri sorumlusu” / GDPR “controller”). Contact: [ADD A REAL CONTACT ADDRESS]. [A named legal entity and contact must be filled in before launch.]"
+      },
+      {
+        "h": "Playing as a guest",
+        "b": "Without an account, your games, saved progress, statistics, and settings are stored only on your device (in the browser's IndexedDB/localStorage). This data never leaves your device, we cannot see it, and clearing your browser storage erases it."
+      },
+      {
+        "h": "What we store for an account",
+        "b": "Account data: your username, your email address, a securely hashed password (never the password itself), and the account creation date. Game data: your server-verified game results (score, time, move count), your lifetime statistics, and any games you choose to save to your account."
+      },
+      {
+        "h": "Why we process it, and the legal basis",
+        "b": "We process this data only to provide the game and operate the leaderboard you signed up for. KVKK: processing necessary to establish and perform a contract (Art. 5/2-c) and our legitimate interest in a fair leaderboard (Art. 5/2-f). GDPR: performance of a contract (Art. 6(1)(b)) and legitimate interests (Art. 6(1)(f)). [Confirm the exact legal bases with a lawyer.]"
+      },
+      {
+        "h": "Cookies and local storage",
+        "b": "We use only strictly-necessary, first-party cookies, and only after you sign in: an authentication cookie (keeps you signed in) and an anti-forgery cookie (protects against CSRF). There are no advertising or analytics cookies. Because these cookies are strictly necessary for a service you asked for, no cookie-consent banner is required. Guests receive no cookies at all. Settings and game data are kept in your browser's local storage to run the game itself."
+      },
+      {
+        "h": "Your rights",
+        "b": "From within the app you can export all of your stored data as JSON (right of access / portability) and permanently delete your account and every associated record (right to erasure). Under KVKK Art. 11 and GDPR Arts. 15–21 you also have rights to rectification, restriction, and objection, and to lodge a complaint with a supervisory authority — in Türkiye, the Personal Data Protection Authority (KVKK Kurumu)."
+      },
+      {
+        "h": "How long we keep it",
+        "b": "Account data is kept until you delete it. Deleting your account immediately and permanently removes your statistics, saved games, and leaderboard entries as well (cascade delete)."
+      },
+      {
+        "h": "Where your data is, and transfers",
+        "b": "Account data is stored on our server in [ADD HOSTING REGION]. If you use the app from outside that region (for example from the EU), your data may be transferred across borders. [A cross-border transfer basis — KVKK explicit consent / adequacy / GDPR safeguards — must be reviewed by a lawyer once hosting is chosen.]"
+      },
+      {
+        "h": "Security",
+        "b": "Passwords are hashed using ASP.NET Core Identity's defaults, traffic is served over HTTPS, and every leaderboard submission is independently re-verified on the server, so a manipulated score cannot be recorded."
+      },
+      {
+        "h": "Children",
+        "b": "This game is intended for a general audience and is not directed at children under [ADD AGE]. [Age threshold and any parental-consent handling need legal review for KVKK and GDPR/target markets.]"
+      },
+      {
+        "h": "Changes",
+        "b": "We may update this policy as the game grows; significant changes will be announced in the app."
+      }
+    ]
+  },
+  "register": {
+    "noticeTitle": "Before you create an account",
+    "notice": "Creating an account stores your username, email, and server-verified game results so you can appear on the global leaderboard. There are no ads or tracking. You can export or delete your data at any time.",
+    "acknowledge": "By registering you agree to the Terms and acknowledge the Privacy policy.",
+    "seePolicy": "Read the Privacy policy"
   },
   "terms": {
     "title": "Terms",

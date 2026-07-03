@@ -1,10 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowLeftIcon } from '../icons/icons';
 
+interface Section {
+  readonly h: string;
+  readonly b: string;
+}
+
 /** Privacy / Terms page. Content comes fully from the locale resources. */
 export function LegalScreen({ page, onBack }: { page: 'privacy' | 'terms'; onBack: () => void }) {
   const { t } = useTranslation();
-  const paragraphs = ['p1', 'p2', 'p3', 'p4'] as const;
+
+  // Privacy is a structured, sectioned policy; Terms is a short list of paragraphs.
+  const raw: unknown = t(`${page}.sections`, { returnObjects: true, defaultValue: '' });
+  const sections = Array.isArray(raw) ? (raw as Section[]) : null;
+  const updated = t(`${page}.updated`, { defaultValue: '' });
 
   return (
     <section className="screen" aria-labelledby={`${page}-title`}>
@@ -18,11 +27,19 @@ export function LegalScreen({ page, onBack }: { page: 'privacy' | 'terms'; onBac
       </div>
 
       <div className="panel legal">
-        {paragraphs.map((key) => (
-          <p key={key} className="legal__para">
-            {t(`${page}.${key}`)}
-          </p>
-        ))}
+        {sections
+          ? sections.map((section, i) => (
+              <div key={i} className="legal__section">
+                <h3 className="legal__h">{section.h}</h3>
+                <p className="legal__para">{section.b}</p>
+              </div>
+            ))
+          : (['p1', 'p2', 'p3', 'p4'] as const).map((key) => (
+              <p key={key} className="legal__para">
+                {t(`${page}.${key}`)}
+              </p>
+            ))}
+        {updated ? <p className="legal__updated">{updated}</p> : null}
       </div>
     </section>
   );

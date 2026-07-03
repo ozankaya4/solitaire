@@ -67,6 +67,10 @@
     <value>Invalid guest data.</value>
   </data>
 
+  <data name="Account.ConfirmMismatch" xml:space="preserve">
+    <value>Type your username exactly to confirm deletion.</value>
+  </data>
+
   <data name="Submit.Duplicate" xml:space="preserve">
     <value>This game has already been submitted.</value>
   </data>

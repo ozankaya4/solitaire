@@ -67,6 +67,10 @@
     <value>Geçersiz misafir verisi.</value>
   </data>
 
+  <data name="Account.ConfirmMismatch" xml:space="preserve">
+    <value>Silme işlemini onaylamak için kullanıcı adını birebir yaz.</value>
+  </data>
+
   <data name="Submit.Duplicate" xml:space="preserve">
     <value>Bu oyun daha önce gönderildi.</value>
   </data>
