@@ -1,16 +1,16 @@
 {
   "brand": "Solitaire",
   "menu": {
-    "kicker": "Kağıt masası",
+    "kicker": "Iskambil masası",
     "titleA": "Soli",
     "titleB": "taire",
-    "tagline": "Bir deste, bir dağıtım ve sakin bir saat. Bir oyun seç ve oyna.",
+    "tagline": "Bir deste, bir el ve sakin bir saat. Bir oyun seç ve oyna.",
     "choose": "Bir oyun seç",
     "play": "Yeni oyun dağıt",
     "settings": "Ayarlar",
     "saved": "Kayıtlı oyunlar",
     "mostPopular": "En popüler",
-    "drawNote": "{{count}}’li çekiş · {{variant}}"
+    "drawNote": "{{count}} kart · {{variant}}"
   },
   "settings": {
     "title": "Ayarlar",
@@ -26,9 +26,9 @@
     "turkish": "Türkçe",
     "draw": "Klondike çekiş",
     "drawHint": "Desteden çevrilen kart sayısı.",
-    "draw1": "1 çek",
-    "draw3": "3 çek",
-    "legal": "Küçük yazılar",
+    "draw1": "1 kart çek",
+    "draw3": "3 kart çek",
+    "legal": "İnce yazılar",
     "privacyLink": "Gizlilik",
     "termsLink": "Koşullar"
   },
@@ -50,12 +50,12 @@
     "completed": "Tamamlanan {{done}}/{{total}}",
     "undo": "Geri al",
     "hint": "İpucu",
-    "newDeal": "Yeni dağıt",
+    "newDeal": "Yeni el dağıt",
     "menu": "Menü",
     "stock": "Deste",
     "win": "Kazandın",
     "winSub": "Seviye geçildi — sıradakine.",
-    "next": "Yeni dağıt",
+    "next": "Yeni el dağıt",
     "toMenu": "Ana menü",
     "switchTitle": "Oyun değiştir",
     "notBuilt": "Bu masa henüz hazır değil",
@@ -88,13 +88,13 @@
     "spider": "Örümcek",
     "freecell": "FreeCell",
     "pyramid": "Piramit",
-    "tripeaks": "Üç Tepe"
+    "tripeaks": "Tri-Peaks"
   },
   "privacy": {
     "title": "Gizlilik",
-    "p1": "Solitaire önce-yerel çalışır. Misafir olarak her şey — oyunların, ilerlemen, istatistiklerin ve ayarların — tarayıcında (IndexedDB) kalır. Sunucuya hiçbir şey gönderilmez.",
+    "p1": "Solitaire öncelikli olarak yerelde çalışır. Misafir olarak her şey — oyunların, ilerlemen, istatistiklerin ve ayarların — tarayıcında (IndexedDB) kalır. Sunucuya hiçbir şey gönderilmez.",
     "p2": "Hesap oluşturursan, küresel skor tablosunu işletebilmek için kullanıcı adını, e-posta adresini ve doğrulanmış oyun sonuçlarını (skor, süre, hamle sayısı) saklarız.",
-    "p3": "Reklam, izleyici veya analiz aracı yoktur. E-postan yalnızca hesabını tanımlamak için kullanılır; hiçbir zaman herkese açık gösterilmez ve kimseyle paylaşılmaz.",
+    "p3": "Reklam, takip veya analiz aracı yoktur. E-postan yalnızca hesabını tanımlamak için kullanılır; hiçbir zaman herkese açık gösterilmez ve kimseyle paylaşılmaz.",
     "p4": "Kayıtlı oyunlarını ve istatistiklerini istediğin an uygulamadan silebilirsin. Hesabını silmek sunucudaki verilerini de kaldırır."
   },
   "terms": {
