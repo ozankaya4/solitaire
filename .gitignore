@@ -35,6 +35,11 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 
+# Local SQLite dev/test databases (schema comes from migrations / EnsureCreated)
+*.db
+*.db-shm
+*.db-wal
+
 # ---------------------------------------------------------------------------
 # Node / Frontend
 # ---------------------------------------------------------------------------

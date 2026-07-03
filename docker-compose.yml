@@ -1,0 +1,31 @@
+# Local PostgreSQL so the production database provider (Npgsql) can be tested.
+#
+#   docker compose up -d db
+#   # then run the API against Postgres, e.g. (PowerShell):
+#   $env:Database__Provider="Postgres"
+#   $env:ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=solitaire;Username=solitaire;Password=solitaire"
+#   dotnet run --project backend/src/Solitaire.Api
+#
+# Credentials here are LOCAL DEV ONLY. In production the connection string is
+# supplied via environment/secret store (see README), never committed.
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: solitaire-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: solitaire
+      POSTGRES_USER: solitaire
+      POSTGRES_PASSWORD: solitaire
+    ports:
+      - '5432:5432'
+    volumes:
+      - solitaire-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U solitaire -d solitaire']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  solitaire-pgdata:

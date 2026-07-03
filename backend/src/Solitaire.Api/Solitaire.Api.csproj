@@ -1,12 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <!--
-    Solitaire.Api — HTTP boundary (Minimal API).
-    Depends on Solitaire.Engine for game logic; contains no game rules itself.
+    Solitaire.Api — HTTP boundary (Minimal API): EF Core data layer, ASP.NET Core
+    Identity (cookie auth), and the security baseline. Depends on Solitaire.Engine
+    for validating guest game data; contains no game rules itself.
   -->
+
+  <PropertyGroup>
+    <!-- Public API/DTO/endpoint types are the surface of an app, not a library. -->
+    <NoWarn>$(NoWarn);CA1515</NoWarn>
+    <!-- Enables `dotnet user-secrets` for local secrets (e.g. the Postgres connection string). -->
+    <UserSecretsId>solitaire-api</UserSecretsId>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Solitaire.Engine\Solitaire.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <!-- Override the vulnerable transitive native SQLite (GHSA-2m69-gcr7-jv3q) with a patched build. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.0" />
   </ItemGroup>
 
 </Project>
