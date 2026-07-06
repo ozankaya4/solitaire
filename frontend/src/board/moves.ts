@@ -61,7 +61,21 @@ export function moveBetween(
   }
 
   // Klondike
-  if (dest.kind === 'foundation') {
+  const moving = src.cards[srcIndex]?.card;
+  if (!moving) {
+    return null;
+  }
+  // An assigned foundation slot only takes its own suit; an unassigned slot
+  // ("fslot") takes any ace and will adopt that suit. The engine keys
+  // foundations by suit, so both map to the same suit-implicit move — the
+  // guards here keep the drop target honest with what the player sees.
+  if (dest.kind === 'foundation' || dest.kind === 'fslot') {
+    if (dest.kind === 'foundation' && Number(moving.suit) !== dest.index) {
+      return null;
+    }
+    if (dest.kind === 'fslot' && moving.rank !== 1) {
+      return null;
+    }
     if (src.kind === 'waste') {
       return legal(variant, state, { type: 'WasteToFoundation' });
     }

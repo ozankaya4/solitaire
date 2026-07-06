@@ -1,6 +1,11 @@
 // Turns an engine snapshot into a renderable board model: a set of piles, each
-// holding render-cards with a stable key (for Motion layout tweens) and face-up
-// flag. Card values are shared with the engine (suit/rank).
+// holding render-cards with a stable key (for move animations) and face-up flag.
+// Card values are shared with the engine (suit/rank).
+//
+// Klondike foundations are displayed through a SLOT mapping: the engine keys
+// foundations by suit, but visually an ace may be placed on any empty top slot,
+// which then hosts that suit. `foundationSlots[i]` is the suit assigned to slot i
+// (or null → an empty "fslot-i" placeholder that accepts any ace).
 
 import type { Card } from '../engine/cards';
 import { ordinalIndex } from '../engine/cards';
@@ -12,7 +17,7 @@ import type { VariantId } from '../app/types';
 export type PileKind = 'stock' | 'waste' | 'foundation' | 'tableau';
 
 export interface RenderCard {
-  /** Stable identity for layout animations (unique for Klondike; occurrence-tagged for Spider). */
+  /** Stable identity for move animations (unique for Klondike; occurrence-tagged for Spider). */
   readonly key: string;
   readonly card: Card;
   readonly faceUp: boolean;
@@ -33,57 +38,82 @@ export interface BoardModel {
   readonly tableau: readonly Pile[];
   /** Spider: completed K→A sequences (0..8). */
   readonly completed?: number;
+  /** Klondike: cards flipped per draw (drives the waste fan). */
+  readonly drawCount?: number;
 }
+
+export type FoundationSlots = readonly (number | null)[];
+
+export const UNASSIGNED_SLOTS: FoundationSlots = [null, null, null, null];
 
 export function pileId(kind: PileKind, index = 0): string {
   return kind === 'tableau' || kind === 'foundation' ? `${kind}-${index}` : kind;
 }
 
-export function boardModel(variant: VariantId, state: AnyState): BoardModel {
+export function boardModel(
+  variant: VariantId,
+  state: AnyState,
+  foundationSlots: FoundationSlots = [0, 1, 2, 3],
+): BoardModel {
   return variant === 'spider'
     ? spiderModel(state as SpiderState)
-    : klondikeModel(state as KlondikeState);
+    : klondikeModel(state as KlondikeState, foundationSlots);
 }
 
-function klondikeModel(state: KlondikeState): BoardModel {
-  const faceDownKey = (card: Card): string => `k${ordinalIndex(card)}`;
+function klondikeModel(state: KlondikeState, slots: FoundationSlots): BoardModel {
+  const cardKey = (card: Card): string => `k${ordinalIndex(card)}`;
 
   const stock: Pile = {
     id: 'stock',
     kind: 'stock',
     index: 0,
-    cards: state.stock.map((card) => ({ key: faceDownKey(card), card, faceUp: false })),
+    cards: state.stock.map((card) => ({ key: cardKey(card), card, faceUp: false })),
   };
   const waste: Pile = {
     id: 'waste',
     kind: 'waste',
     index: 0,
-    cards: state.waste.map((card) => ({ key: faceDownKey(card), card, faceUp: true })),
+    cards: state.waste.map((card) => ({ key: cardKey(card), card, faceUp: true })),
   };
-  const foundations: Pile[] = state.foundations.map((topRank, suit) => ({
-    id: pileId('foundation', suit),
-    kind: 'foundation',
-    index: suit,
-    cards:
-      topRank === 0
-        ? []
-        : Array.from({ length: topRank }, (_, i) => {
-            const card: Card = { suit, rank: i + 1 };
-            return { key: faceDownKey(card), card, faceUp: true };
-          }),
-  }));
+
+  // Foundations in display-slot order: an assigned slot shows its suit's pile
+  // (id stays foundation-{suit} so hints/moves address it by suit); an
+  // unassigned slot is an empty placeholder that accepts any ace.
+  const foundations: Pile[] = slots.map((suit, slot) => {
+    if (suit === null) {
+      return { id: `fslot-${slot}`, kind: 'foundation', index: slot, cards: [] };
+    }
+    const topRank = state.foundations[suit] ?? 0;
+    return {
+      id: pileId('foundation', suit),
+      kind: 'foundation',
+      index: suit,
+      cards: Array.from({ length: topRank }, (_, i) => {
+        const card: Card = { suit, rank: i + 1 };
+        return { key: cardKey(card), card, faceUp: true };
+      }),
+    };
+  });
+
   const tableau: Pile[] = state.tableau.map((pile, index) => ({
     id: pileId('tableau', index),
     kind: 'tableau',
     index,
     cards: pile.cards.map((card, pos) => ({
-      key: faceDownKey(card),
+      key: cardKey(card),
       card,
       faceUp: pos >= pile.faceDownCount,
     })),
   }));
 
-  return { variant: 'klondike', stock, waste, foundations, tableau };
+  return {
+    variant: 'klondike',
+    stock,
+    waste,
+    foundations,
+    tableau,
+    drawCount: state.options.drawCount,
+  };
 }
 
 function spiderModel(state: SpiderState): BoardModel {
