@@ -4,8 +4,6 @@
 # origin, and Netlify forwards API calls to the backend server-side. That keeps
 # the auth cookie first-party (so SameSite=Strict keeps working) with no CORS and
 # no CSP changes. Because the SPA calls its own origin, VITE_API_URL stays unset.
-#
-# ==> Replace the backend host below with your deployed API URL (see DEPLOYMENT.md).
 
 [build]
   base = "frontend"
@@ -24,6 +22,7 @@
 
 # SPA fallback for any unknown path (defensive; the app is a single page).
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "https://solitaire-wgq7.onrender.com/"
   status = 200
+  force = true

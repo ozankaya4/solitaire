@@ -69,18 +69,22 @@ Render and Netlify both build from a GitHub repo, so this comes first.
    You'll see a connection string. **Copy the "Connection string" for the
    pooled connection.** It looks like:
    ```
-   postgresql://neondb_owner:XXXX@ep-cool-name-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
+   postgresql://neondb_owner:npg_fCohYFmI0at6@ep-steep-pine-zaex5uql-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
    ```
 4. **Convert it to the .NET (Npgsql) format** — the app needs key/value form, not
    the URL form. Take the pieces from the URL and build this single line:
    ```
-   Host=ep-cool-name-pooler.eu-central-1.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=XXXX;SSL Mode=Require;Trust Server Certificate=true
+   Host=ep-steep-pine-zaex5uql-pooler.c-2.eu-west-2.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=npg_fCohYFmI0at6;SSL Mode=Require;Trust Server Certificate=true
    ```
    - `Host` = the part after `@` and before `/`
    - `Database` = the part after the last `/` (before `?`), usually `neondb`
    - `Username` / `Password` = the part before `@` (split on `:`)
 
    Save this line somewhere temporary — it's your `ConnectionStrings__DefaultConnection`.
+
+    Host=ep-steep-pine-zaex5uql-pooler.c-2.eu-west-2.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=npg_fCohYFmI0at6;SSL Mode=Require;Trust Server Certificate=true  
+
+   
 
 **Checkpoint 1:** You have a Neon connection string in the `Host=...;Database=...`
 format. (Don't worry about creating tables — the app runs its migrations
@@ -114,6 +118,8 @@ automatically on first boot.)
    **Copy it.** Open `<that-url>/health` in your browser — you should see
    `{"status":"ok"}`.
 
+   https://solitaire-wgq7.onrender.com/
+
 **Checkpoint 2:** `https://<your-render-app>.onrender.com/health` returns
 `{"status":"ok"}`, and the logs show the app started and applied migrations
 (look for EF Core migration lines, no red errors).
@@ -121,6 +127,8 @@ automatically on first boot.)
 > If the build fails on the database at startup, double-check the connection
 > string format (Phase 1, step 4) — the `postgresql://` URL form will not work;
 > it must be the `Host=...;` form.
+
+https://solitaire-wgq7.onrender.com/
 
 ---
 
