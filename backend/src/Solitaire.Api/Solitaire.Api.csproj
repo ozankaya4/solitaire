@@ -18,6 +18,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Single source of truth for the curated Klondike level->seed ladder: the same
+      file the frontend ships. Embedded so the leaderboard can verify that a
+      submitted seed is genuinely the seed for its claimed level (anti-cheat).
+    -->
+    <EmbeddedResource Include="../../../frontend/src/levels/klondike.levels.json">
+      <LogicalName>Solitaire.Api.Leaderboard.klondike.levels.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">

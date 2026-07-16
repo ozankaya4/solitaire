@@ -16,6 +16,7 @@ namespace Solitaire.Api.Leaderboard;
 /// </summary>
 public sealed partial class GameVerificationService(
     AppDbContext db,
+    LevelRegistry levels,
     ILogger<GameVerificationService> logger)
 {
     /// <summary>
@@ -36,6 +37,7 @@ public sealed partial class GameVerificationService(
         NotAWin,
         ScoreMismatch,
         ImplausibleTime,
+        UnverifiableLevel,
         Duplicate,
     }
 
@@ -95,7 +97,20 @@ public sealed partial class GameVerificationService(
                 $"replay score {outcome.Score} != claimed {request.ClaimedScore}");
         }
 
-        // 5) Dedupe: the same game (variant+seed+options+moves) counts once per user.
+        // 5) Level integrity: the claimed level must own the submitted seed. This is
+        //    what stops an easy deal being passed off as a high level. Klondike is
+        //    rankable only within its curated ladder; Spider is endless.
+        int? canonicalSeed = levels.CanonicalSeed(engine.Variant, request.Level);
+        if (canonicalSeed != request.Seed)
+        {
+            return Reject(
+                userId,
+                request,
+                Verdict.UnverifiableLevel,
+                $"level {request.Level} expects seed {canonicalSeed?.ToString(CultureInfo.InvariantCulture) ?? "none"}, got {request.Seed}");
+        }
+
+        // 6) Dedupe: the same game (variant+seed+options+moves) counts once per user.
         string hash = CanonicalHash(request);
         bool duplicate = await db.LeaderboardEntries
             .AnyAsync(e => e.UserId == userId && e.GameHash == hash, ct);
@@ -104,12 +119,13 @@ public sealed partial class GameVerificationService(
             return Reject(userId, request, Verdict.Duplicate, "already recorded");
         }
 
-        // 6) Record the verified result + update lifetime stats.
+        // 7) Record the verified result + update lifetime stats.
         var entry = new LeaderboardEntryEntity
         {
             UserId = userId,
             Variant = engine.Variant, // canonical lowercase id
             Seed = request.Seed,
+            Level = request.Level,
             OptionsJson = CanonicalOptionsJson(request.Options),
             Score = outcome.Score,
             TimeMs = request.ClaimedTimeMs,

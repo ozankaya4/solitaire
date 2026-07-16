@@ -48,7 +48,8 @@ public static class LeaderboardEndpoints
         return result.Verdict switch
         {
             GameVerificationService.Verdict.Accepted => Results.Ok(new SubmitGameResponse(
-                result.Entry!.Score,
+                result.Entry!.Level,
+                result.Entry.Score,
                 result.Entry.TimeMs,
                 await RankOfAsync(db, result.Entry.Variant, userId, ct) ?? 0)),
             GameVerificationService.Verdict.Duplicate => Results.Conflict(
@@ -74,12 +75,12 @@ public static class LeaderboardEndpoints
 
         int take = Math.Clamp(top ?? 10, 1, MaxTop);
 
-        // Best score per player, ranked.
+        // Highest level reached per player.
         var bests = await db.LeaderboardEntries
             .Where(e => e.Variant == engine.Variant)
             .GroupBy(e => e.UserId)
-            .Select(g => new { UserId = g.Key, Score = g.Max(e => e.Score) })
-            .OrderByDescending(b => b.Score)
+            .Select(g => new { UserId = g.Key, Level = g.Max(e => e.Level) })
+            .OrderByDescending(b => b.Level)
             .Take(take)
             .ToListAsync(ct);
 
@@ -88,46 +89,61 @@ public static class LeaderboardEndpoints
             .Where(u => userIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? "?", ct);
 
-        // Representative time: the fastest run at that player's best score.
-        var times = await db.LeaderboardEntries
+        // Representative run at each player's best level: highest score, then fastest.
+        var runs = await db.LeaderboardEntries
             .Where(e => e.Variant == engine.Variant && userIds.Contains(e.UserId))
-            .GroupBy(e => new { e.UserId, e.Score })
-            .Select(g => new { g.Key.UserId, g.Key.Score, TimeMs = g.Min(e => e.TimeMs) })
+            .GroupBy(e => new { e.UserId, e.Level })
+            .Select(g => new { g.Key.UserId, g.Key.Level, Score = g.Max(e => e.Score), TimeMs = g.Min(e => e.TimeMs) })
             .ToListAsync(ct);
-        var timeLookup = times.ToDictionary(t => (t.UserId, t.Score), t => t.TimeMs);
+        var runLookup = runs.ToDictionary(r => (r.UserId, r.Level), r => (r.Score, r.TimeMs));
 
+        // Competition ranking by level: players tied on level share a rank.
+        int rank = 0;
+        int index = 0;
+        int? prevLevel = null;
         var rows = bests
-            .Select((b, i) => new LeaderboardRow(
-                i + 1,
-                names.GetValueOrDefault(b.UserId, "?"),
-                b.Score,
-                timeLookup.GetValueOrDefault((b.UserId, b.Score), 0)))
+            .Select(b =>
+            {
+                index++;
+                if (b.Level != prevLevel)
+                {
+                    rank = index;
+                    prevLevel = b.Level;
+                }
+                var run = runLookup.GetValueOrDefault((b.UserId, b.Level));
+                return new LeaderboardRow(
+                    rank,
+                    names.GetValueOrDefault(b.UserId, "?"),
+                    b.Level,
+                    run.Score,
+                    run.TimeMs);
+            })
             .ToList();
 
         // The requesting player's rank (null when signed out or unranked).
         int? playerRank = null;
-        int? playerBest = null;
+        int? playerBestLevel = null;
         string? userId = userManager.GetUserId(principal);
         if (userId is not null)
         {
             playerRank = await RankOfAsync(db, engine.Variant, userId, ct);
             if (playerRank is not null)
             {
-                playerBest = await db.LeaderboardEntries
+                playerBestLevel = await db.LeaderboardEntries
                     .Where(e => e.Variant == engine.Variant && e.UserId == userId)
-                    .MaxAsync(e => (int?)e.Score, ct);
+                    .MaxAsync(e => (int?)e.Level, ct);
             }
         }
 
-        return Results.Ok(new LeaderboardResponse(engine.Variant, rows, playerRank, playerBest));
+        return Results.Ok(new LeaderboardResponse(engine.Variant, rows, playerRank, playerBestLevel));
     }
 
-    /// <summary>1-based rank by best score, or null if the player has no entries.</summary>
+    /// <summary>1-based rank by highest level reached, or null if the player has no entries.</summary>
     private static async Task<int?> RankOfAsync(AppDbContext db, string variant, string userId, CancellationToken ct)
     {
         int? myBest = await db.LeaderboardEntries
             .Where(e => e.Variant == variant && e.UserId == userId)
-            .MaxAsync(e => (int?)e.Score, ct);
+            .MaxAsync(e => (int?)e.Level, ct);
         if (myBest is null)
         {
             return null;
@@ -136,8 +152,8 @@ public static class LeaderboardEndpoints
         int better = await db.LeaderboardEntries
             .Where(e => e.Variant == variant)
             .GroupBy(e => e.UserId)
-            .Select(g => g.Max(e => e.Score))
-            .CountAsync(s => s > myBest.Value, ct);
+            .Select(g => g.Max(e => e.Level))
+            .CountAsync(l => l > myBest.Value, ct);
         return better + 1;
     }
 }

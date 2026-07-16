@@ -1,0 +1,29 @@
+# Netlify config for the Solitaire SPA.
+#
+# The `/api/*` proxy is the key piece: the browser only ever talks to the Netlify
+# origin, and Netlify forwards API calls to the backend server-side. That keeps
+# the auth cookie first-party (so SameSite=Strict keeps working) with no CORS and
+# no CSP changes. Because the SPA calls its own origin, VITE_API_URL stays unset.
+#
+# ==> Replace the backend host below with your deployed API URL (see DEPLOYMENT.md).
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Proxy API calls to the backend (status 200 = rewrite/proxy, not a redirect).
+[[redirects]]
+  from = "/api/*"
+  to = "https://REPLACE-WITH-YOUR-BACKEND.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback for any unknown path (defensive; the app is a single page).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

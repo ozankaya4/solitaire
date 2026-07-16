@@ -1,6 +1,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 var env = builder.Environment;
 var isTesting = env.IsEnvironment("Testing");
+
+// Bind to the platform-provided port in production (Render/Railway/Fly set PORT).
+// In dev this is unset and the launchSettings URL (5080) is used.
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 // -- Database: SQLite for dev/test, PostgreSQL (Npgsql) for prod -------------
 // Provider is chosen by config (Database:Provider), defaulting by environment.
@@ -97,6 +106,8 @@ builder.Services.AddAntiforgery(options =>
 
 builder.Services.AddScoped<GuestImportService>();
 builder.Services.AddScoped<GameVerificationService>();
+// Curated level->seed ladder is immutable for the process lifetime.
+builder.Services.AddSingleton<Solitaire.Api.Leaderboard.LevelRegistry>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
@@ -116,6 +127,20 @@ using (var scope = app.Services.CreateScope())
 }
 
 // -- Pipeline (order matters) ------------------------------------------------
+// Behind the platform's TLS-terminating proxy in production: trust its
+// X-Forwarded-Proto/-For so the app sees HTTPS (sets/accepts Secure cookies) and
+// the real client IP (rate limiting). Only the single platform proxy fronts us.
+if (!env.IsDevelopment() && !isTesting)
+{
+    var forwardedOptions = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    };
+    forwardedOptions.KnownIPNetworks.Clear();
+    forwardedOptions.KnownProxies.Clear();
+    app.UseForwardedHeaders(forwardedOptions);
+}
+
 if (!env.IsDevelopment() && !isTesting)
 {
     app.UseHsts();

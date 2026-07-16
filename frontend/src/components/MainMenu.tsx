@@ -1,8 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../app/settings';
+import { useAuth } from '../auth/AuthContext';
 import { VARIANTS } from '../app/variants';
 import type { VariantId } from '../app/types';
-import { BookmarkStackIcon, GearIcon, PlayIcon, StarIcon } from '../icons/icons';
+import {
+  BookmarkStackIcon,
+  GearIcon,
+  PlayIcon,
+  StarIcon,
+  TrophyIcon,
+  UserIcon,
+} from '../icons/icons';
 import { Select, type SelectOption } from './Select';
 import { variantIcon } from './variantIcon';
 
@@ -10,11 +18,20 @@ interface MainMenuProps {
   onPlay: () => void;
   onOpenSettings: () => void;
   onOpenSaved: () => void;
+  onOpenLeaderboard: () => void;
+  onOpenAuth: () => void;
 }
 
-export function MainMenu({ onPlay, onOpenSettings, onOpenSaved }: MainMenuProps) {
+export function MainMenu({
+  onPlay,
+  onOpenSettings,
+  onOpenSaved,
+  onOpenLeaderboard,
+  onOpenAuth,
+}: MainMenuProps) {
   const { t } = useTranslation();
   const { defaultVariant, setDefaultVariant, drawMode } = useSettings();
+  const { user, logout } = useAuth();
 
   const options: SelectOption[] = VARIANTS.map((variant) => ({
     value: variant.id,
@@ -50,6 +67,11 @@ export function MainMenu({ onPlay, onOpenSettings, onOpenSaved }: MainMenuProps)
         {t('menu.play')}
       </button>
 
+      <button type="button" className="btn btn--block" onClick={onOpenLeaderboard}>
+        <TrophyIcon size={18} />
+        {t('menu.leaderboard')}
+      </button>
+
       <div className="btn__row">
         <button type="button" className="btn" onClick={onOpenSettings}>
           <GearIcon size={18} />
@@ -60,6 +82,23 @@ export function MainMenu({ onPlay, onOpenSettings, onOpenSaved }: MainMenuProps)
           {t('menu.saved')}
         </button>
       </div>
+
+      {user ? (
+        <div className="account">
+          <span className="account__id">
+            <UserIcon size={16} />
+            {user.username}
+          </span>
+          <button type="button" className="account__link" onClick={() => void logout()}>
+            {t('auth.logout')}
+          </button>
+        </div>
+      ) : (
+        <button type="button" className="btn btn--block" onClick={onOpenAuth}>
+          <UserIcon size={18} />
+          {t('auth.signIn')}
+        </button>
+      )}
 
       <p className="footnote">
         <StarIcon size={12} />{' '}

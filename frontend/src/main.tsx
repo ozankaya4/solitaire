@@ -16,6 +16,7 @@ import './styles/board.css';
 import './i18n';
 import App from './App';
 import { SettingsProvider } from './app/settings';
+import { AuthProvider } from './auth/AuthContext';
 import { hydrateStore } from './storage/cache';
 
 function registerServiceWorker(): void {
@@ -47,7 +48,9 @@ async function bootstrap(): Promise<void> {
   createRoot(rootElement).render(
     <StrictMode>
       <SettingsProvider>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </SettingsProvider>
     </StrictMode>,
   );

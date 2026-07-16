@@ -47,8 +47,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
         {
             // Dedupe: the same verified game cannot be recorded twice for a user.
             entity.HasIndex(e => new { e.UserId, e.GameHash }).IsUnique();
-            // Leaderboard reads: per-variant, ordered by score.
-            entity.HasIndex(e => new { e.Variant, e.Score });
+            // Leaderboard reads: per-variant, ranked by level (best per player).
+            entity.HasIndex(e => new { e.Variant, e.Level });
             entity.Property(e => e.Variant).HasMaxLength(32);
             entity.Property(e => e.GameHash).HasMaxLength(64);
             entity

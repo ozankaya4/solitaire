@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Board } from './Board';
 import { WinCascade } from './WinCascade';
-import { useGame } from '../../board/useGame';
+import { useGame, type GameResult } from '../../board/useGame';
+import { api } from '../../api/client';
+import { useAuth } from '../../auth/AuthContext';
+import { AuthModal } from '../AuthModal';
+import { LeaderboardModal } from '../LeaderboardModal';
 import type { VariantId } from '../../app/types';
 import { ArrowLeftIcon, BulbIcon, GridIcon, RefreshIcon, UndoIcon } from '../../icons/icons';
 import { variantIcon } from '../variantIcon';
@@ -17,8 +21,42 @@ export function GameScreen({
   initialVariant?: VariantId;
 }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const game = useGame(initialVariant);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [rank, setRank] = useState<number | null>(null);
+  const submittedRef = useRef<GameResult | null>(null);
+
+  // Submit a won game to the leaderboard when signed in. Re-runs if the player
+  // signs in from the win screen (user changes), so a late sign-in still records.
+  useEffect(() => {
+    const win = game.lastWin;
+    if (!win) {
+      submittedRef.current = null;
+      setRank(null);
+      return;
+    }
+    if (!user || submittedRef.current === win) {
+      return;
+    }
+    submittedRef.current = win;
+    api
+      .submitGame({
+        variant: win.variant,
+        seed: win.seed,
+        level: win.level,
+        options: win.options,
+        moves: win.moves,
+        claimedScore: win.score,
+        claimedTimeMs: win.timeMs,
+      })
+      .then((result) => setRank(result.rank))
+      .catch(() => {
+        submittedRef.current = null; // allow a retry (e.g. transient network)
+      });
+  }, [game.lastWin, user]);
 
   if (!game.supported) {
     return (
@@ -103,7 +141,19 @@ export function GameScreen({
 
       <Board key={game.dealNonce} game={game} />
 
-      {game.won ? <WinCascade onNext={game.newDeal} onMenu={onExit} /> : null}
+      {game.won ? (
+        <WinCascade
+          onNext={game.newDeal}
+          onMenu={onExit}
+          onLeaderboard={() => setShowLeaderboard(true)}
+          rank={rank}
+          signedIn={user !== null}
+          onSignIn={() => setShowAuth(true)}
+        />
+      ) : null}
+
+      {showLeaderboard ? <LeaderboardModal onClose={() => setShowLeaderboard(false)} /> : null}
+      {showAuth ? <AuthModal onClose={() => setShowAuth(false)} /> : null}
 
       {menuOpen ? (
         <div className="sheet" onClick={() => setMenuOpen(false)} role="presentation">

@@ -1,0 +1,10 @@
+# Keep the Docker build context small and free of host-built artifacts (which
+# carry Windows paths and would poison the Linux build).
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.vs
+**/.git
+**/TestResults
+frontend/.env*

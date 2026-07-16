@@ -15,6 +15,13 @@ public sealed class SubmitGameRequest
 
     public int Seed { get; set; }
 
+    /// <summary>
+    /// The level this deal claims to be. The server confirms the seed is the
+    /// canonical seed for (variant, level) before the game can rank.
+    /// </summary>
+    [Range(1, 1_000_000)]
+    public int Level { get; set; }
+
     /// <summary>Engine options bag (e.g. drawCount / maxRedeals / suitCount).</summary>
     [Required]
     public Dictionary<string, int> Options { get; set; } = [];
@@ -34,12 +41,12 @@ public sealed class SubmitGameRequest
     public long ClaimedTimeMs { get; set; }
 }
 
-public sealed record SubmitGameResponse(int Score, long TimeMs, int Rank);
+public sealed record SubmitGameResponse(int Level, int Score, long TimeMs, int Rank);
 
-public sealed record LeaderboardRow(int Rank, string Username, int Score, long TimeMs);
+public sealed record LeaderboardRow(int Rank, string Username, int Level, int Score, long TimeMs);
 
 public sealed record LeaderboardResponse(
     string Variant,
     IReadOnlyList<LeaderboardRow> Top,
     int? PlayerRank,
-    int? PlayerBestScore);
+    int? PlayerBestLevel);

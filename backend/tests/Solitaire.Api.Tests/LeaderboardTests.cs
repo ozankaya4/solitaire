@@ -26,8 +26,13 @@ public class LeaderboardTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
     private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
 
-    /// <summary>Loads the verified Klondike win from the shared cross-language vectors.</summary>
-    private static Vector LoadWinVector()
+    // Curated Klondike ladder: level 31 uses seed 2, level 32 uses seed 4. These
+    // are the levels the shared win vectors below correspond to.
+    private const int Seed2Level = 31;
+    private const int Seed4Level = 32;
+
+    /// <summary>Loads a verified Klondike win from the shared cross-language vectors.</summary>
+    private static Vector LoadWinVector(string name = "draw1-seed2-win")
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "shared")))
@@ -40,15 +45,17 @@ public class LeaderboardTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var file = JsonSerializer.Deserialize<VectorFile>(json, WebJson);
         Assert.NotNull(file);
 
-        var vector = file.Vectors.Single(v => v.Name == "draw1-seed2-win");
+        var vector = file.Vectors.Single(v => v.Name == name);
         Assert.True(vector.ExpectedWin);
         return vector;
     }
 
-    private static object SubmissionFor(Vector vector, int? seedOverride = null, long? timeMs = null) => new
+    private static object SubmissionFor(
+        Vector vector, int level = Seed2Level, int? seedOverride = null, long? timeMs = null) => new
     {
         variant = vector.Variant,
         seed = seedOverride ?? vector.Seed,
+        level,
         options = vector.Options,
         moves = vector.Moves.Select(m => new { type = m.Type, source = m.Source, destination = m.Destination, count = m.Count }),
         claimedScore = vector.ExpectedFinalScore,
@@ -78,16 +85,19 @@ public class LeaderboardTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(Seed2Level, body.GetProperty("level").GetInt32());
         Assert.Equal(vector.ExpectedFinalScore, body.GetProperty("score").GetInt32());
         Assert.True(body.GetProperty("rank").GetInt32() >= 1);
 
-        // The verified score shows on the public leaderboard with the player's rank.
+        // The verified level shows on the public leaderboard with the player's rank.
         var board = await client.GetFromJsonAsync<JsonElement>("/api/leaderboard/klondike");
         var top = board.GetProperty("top").EnumerateArray().ToList();
         Assert.Contains(top, row =>
             row.GetProperty("username").GetString() == "honest_player" &&
+            row.GetProperty("level").GetInt32() == Seed2Level &&
             row.GetProperty("score").GetInt32() == vector.ExpectedFinalScore);
         Assert.True(board.GetProperty("playerRank").GetInt32() >= 1);
+        Assert.Equal(Seed2Level, board.GetProperty("playerBestLevel").GetInt32());
     }
 
     [Fact]
@@ -165,5 +175,59 @@ public class LeaderboardTests(ApiFactory factory) : IClassFixture<ApiFactory>
             "/api/games/submit", SubmissionFor(vector, timeMs: 1000));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    // ---- level integrity -------------------------------------------------------
+
+    [Fact]
+    public async Task MislabeledLevel_IsRejected_AndNotRecorded()
+    {
+        var vector = LoadWinVector(); // a genuine seed-2 win...
+        var client = await RegisteredClientAsync("mislabeler");
+
+        // ...but claimed as level 1, whose canonical seed is not 2. The win is real,
+        // yet the level label is a lie — recording it would let an easy deal pose as
+        // a hard level.
+        var response = await client.PostAsJsonAsync("/api/games/submit", SubmissionFor(vector, level: 1));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+
+        var board = await client.GetFromJsonAsync<JsonElement>("/api/leaderboard/klondike");
+        Assert.Equal(JsonValueKind.Null, board.GetProperty("playerRank").ValueKind);
+    }
+
+    [Fact]
+    public async Task LevelBeyondCuratedLadder_IsNotRankable()
+    {
+        var vector = LoadWinVector();
+        var client = await RegisteredClientAsync("overreacher");
+
+        // Klondike is only rankable within its curated ladder; a genuine win claimed
+        // as a level past the ladder cannot be tied to a canonical seed.
+        var response = await client.PostAsJsonAsync("/api/games/submit", SubmissionFor(vector, level: 100_000));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task HigherLevel_RanksAboveLowerLevel()
+    {
+        var lower = LoadWinVector("draw1-seed2-win"); // level 31
+        var higher = LoadWinVector("draw1-seed4-win"); // level 32
+
+        var lowClient = await RegisteredClientAsync("low_level");
+        var lowResp = await lowClient.PostAsJsonAsync("/api/games/submit", SubmissionFor(lower, level: Seed2Level));
+        Assert.Equal(HttpStatusCode.OK, lowResp.StatusCode);
+
+        var highClient = await RegisteredClientAsync("high_level");
+        var highResp = await highClient.PostAsJsonAsync("/api/games/submit", SubmissionFor(higher, level: Seed4Level));
+        Assert.Equal(HttpStatusCode.OK, highResp.StatusCode);
+
+        // The higher level outranks the lower one regardless of score.
+        var board = await highClient.GetFromJsonAsync<JsonElement>("/api/leaderboard/klondike");
+        var top = board.GetProperty("top").EnumerateArray().ToList();
+        int highIndex = top.FindIndex(r => r.GetProperty("username").GetString() == "high_level");
+        int lowIndex = top.FindIndex(r => r.GetProperty("username").GetString() == "low_level");
+        Assert.True(highIndex >= 0 && lowIndex >= 0);
+        Assert.True(highIndex < lowIndex);
+        Assert.Equal(1, top[highIndex].GetProperty("rank").GetInt32());
     }
 }

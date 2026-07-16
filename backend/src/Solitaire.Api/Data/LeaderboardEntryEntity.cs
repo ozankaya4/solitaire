@@ -22,6 +22,14 @@ public sealed class LeaderboardEntryEntity
 
     public int Seed { get; set; }
 
+    /// <summary>
+    /// The curated/generated level this game corresponds to. Verified: the server
+    /// confirms the submitted seed is the canonical seed for (variant, level)
+    /// before recording, so a low-difficulty deal cannot be labeled a high level.
+    /// Leaderboards rank by the highest level a player has a verified win for.
+    /// </summary>
+    public int Level { get; set; }
+
     /// <summary>Engine options bag serialized as JSON (part of the verified identity of the game).</summary>
     [Required]
     public string OptionsJson { get; set; } = "{}";

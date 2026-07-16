@@ -164,7 +164,9 @@ function buildLayout(model: BoardModel, width: number): Layout {
       ...pos,
       w: cardW,
       h: cardH,
-      slot: pile.cards.length === 0,
+      // Always draw the outline: it sits behind the card and is revealed when the
+      // top card (e.g. a lone ace) is lifted, showing the slot beneath.
+      slot: true,
       slotH: cardH,
     });
   });
@@ -194,7 +196,9 @@ function buildLayout(model: BoardModel, width: number): Layout {
       y: tabY,
       w: cardW,
       h: stageH - tabY,
-      slot: pile.cards.length === 0,
+      // Always draw the column-start outline: it sits behind the cards and is
+      // revealed when the column empties (rather than popping in).
+      slot: true,
       slotH: cardH,
     });
   });

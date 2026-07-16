@@ -10,7 +10,24 @@ interface CascadeCard {
   readonly delay: number;
 }
 
-export function WinCascade({ onNext, onMenu }: { onNext: () => void; onMenu: () => void }) {
+interface WinCascadeProps {
+  onNext: () => void;
+  onMenu: () => void;
+  onLeaderboard: () => void;
+  /** Signed-in player's rank for this game, or null while pending / unranked. */
+  rank: number | null;
+  signedIn: boolean;
+  onSignIn: () => void;
+}
+
+export function WinCascade({
+  onNext,
+  onMenu,
+  onLeaderboard,
+  rank,
+  signedIn,
+  onSignIn,
+}: WinCascadeProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion() ?? false;
 
@@ -68,6 +85,20 @@ export function WinCascade({ onNext, onMenu }: { onNext: () => void; onMenu: () 
         >
           <h2 className="win__title">{t('game.win')}</h2>
           <p className="win__sub">{t('game.winSub')}</p>
+
+          {rank != null ? (
+            <p className="win__rank">{t('leaderboard.ranked', { rank })}</p>
+          ) : null}
+          {signedIn ? (
+            <button type="button" className="btn btn--block win__lboard" onClick={onLeaderboard}>
+              {t('leaderboard.view')}
+            </button>
+          ) : (
+            <button type="button" className="btn btn--block win__lboard" onClick={onSignIn}>
+              {t('leaderboard.signInToSave')}
+            </button>
+          )}
+
           <button type="button" className="btn btn--primary btn--block" onClick={onNext}>
             {t('game.next')}
           </button>

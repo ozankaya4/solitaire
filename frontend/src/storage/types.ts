@@ -9,6 +9,12 @@ export interface SavedGame {
   bag: Record<string, number>;
   moves: MoveDto[];
   hintsUsed: number;
+  /**
+   * Accumulated play time so the clock continues across save/resume. Optional for
+   * back-compat with saves written before this field existed. Carrying real time
+   * forward keeps a resumed-then-won game above the server's plausibility floor.
+   */
+  elapsedMs?: number;
   updatedAt: number;
 }
 

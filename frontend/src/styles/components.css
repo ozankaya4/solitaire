@@ -561,6 +561,210 @@
   color: var(--color-ink-faint);
 }
 
+/* -- Modal (auth + leaderboard pop-ups) ----------------------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--space-md);
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.modal__panel {
+  width: 100%;
+  max-width: 26rem;
+  max-height: calc(100dvh - 2 * var(--space-lg));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-md) var(--space-xl);
+  background: var(--color-surface);
+  border: var(--border-hair) solid var(--color-border);
+  border-top: var(--border-thick) solid var(--color-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.modal__panel:focus {
+  outline: none;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.modal__title {
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+}
+
+/* -- Forms + inputs -------------------------------------------------------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 var(--space-md);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  background: var(--color-inset);
+  border: var(--border-hair) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--glow-accent);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.form__error {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
+
+.form__note {
+  font-size: var(--text-2xs);
+  line-height: var(--leading);
+  color: var(--color-ink-faint);
+}
+
+/* -- Account (menu) -------------------------------------------------------- */
+.account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: var(--border-hair) dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.account__id {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-ink);
+}
+
+.account__link {
+  background: none;
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+.account__link:hover {
+  color: var(--color-accent);
+}
+
+/* -- Leaderboard ----------------------------------------------------------- */
+.lboard {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lboard__row {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto auto;
+  gap: var(--space-sm);
+  align-items: center;
+  padding: var(--space-xs) var(--space-2xs);
+  border-bottom: var(--border-hair) dashed var(--color-border);
+}
+
+.lboard__row--head {
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.lboard__row.is-you {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  border-left: var(--border-thick) solid var(--color-accent);
+  border-radius: var(--radius-xs);
+}
+
+.lboard__rank {
+  font-weight: 700;
+  color: var(--color-ink-dim);
+  text-align: right;
+}
+
+.lboard__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+}
+
+.lboard__level {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.lboard__time {
+  font-size: var(--text-2xs);
+  color: var(--color-ink-faint);
+}
+
+.lboard__msg {
+  padding: var(--space-lg) 0;
+  text-align: center;
+  color: var(--color-ink-dim);
+  font-size: var(--text-sm);
+}
+
+.lboard__foot {
+  font-size: var(--text-xs);
+  color: var(--color-ink-dim);
+  text-align: center;
+}
+
+/* -- Win overlay extras ---------------------------------------------------- */
+.win__rank {
+  margin-bottom: var(--space-sm);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-accent-2);
+}
+
+.win__lboard {
+  margin-bottom: var(--space-sm);
+}
+
 /* -- Responsive uplift (still phone-first) -------------------------------- */
 @media (min-width: 40rem) {
   .screen {

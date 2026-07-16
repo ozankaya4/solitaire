@@ -6,11 +6,50 @@
     "titleB": "taire",
     "tagline": "Bir deste, bir el ve sakin bir saat. Bir oyun seç ve oyna.",
     "choose": "Bir oyun seç",
-    "play": "Yeni oyun dağıt",
+    "play": "Yeni oyun dağıt / Devam et",
     "settings": "Ayarlar",
     "saved": "Kayıtlı oyunlar",
+    "leaderboard": "Skor tablosu",
     "mostPopular": "En popüler",
     "drawNote": "{{count}} kart · {{variant}}"
+  },
+  "auth": {
+    "signIn": "Giriş yap",
+    "logout": "Çıkış yap",
+    "loginTitle": "Tekrar hoş geldin",
+    "registerTitle": "Hesap oluştur",
+    "tabsLabel": "Giriş yap veya hesap oluştur",
+    "login": "Giriş yap",
+    "register": "Kaydol",
+    "name": "Ad",
+    "nameHint": "Skor tablosundaki herkese açık adın. Harf, rakam, . _ - (3–32).",
+    "email": "E-posta",
+    "password": "Parola",
+    "passwordHint": "En az 8 karakter.",
+    "createAccount": "Hesap oluştur",
+    "working": "Lütfen bekle…",
+    "error": {
+      "name": "3–32 harf, rakam veya . _ - kullan",
+      "email": "Geçerli bir e-posta adresi gir.",
+      "password": "Parola en az 8 karakter olmalı.",
+      "generic": "Bir şeyler ters gitti. Lütfen tekrar dene."
+    }
+  },
+  "leaderboard": {
+    "title": "Skor tablosu",
+    "variantLabel": "Bir oyun seç",
+    "player": "Oyuncu",
+    "levelCol": "Seviye",
+    "timeCol": "Süre",
+    "loading": "Yükleniyor…",
+    "error": "Skor tablosu yüklenemedi.",
+    "empty": "Henüz kimse sıralamaya girmedi. İlk sen ol.",
+    "yourRank": "Sıran #{{rank}} · seviye {{level}}",
+    "unranked": "Sıralamaya girmek için giriş yapmışken bir seviye kazan.",
+    "signedOut": "Seviyeni buraya kaydetmek için giriş yap.",
+    "ranked": "Sıralama #{{rank}}",
+    "view": "Skor tablosunu gör",
+    "signInToSave": "Seviyeni kaydetmek için giriş yap"
   },
   "settings": {
     "title": "Ayarlar",
@@ -160,7 +199,8 @@
   "a11y": {
     "back": "Geri",
     "home": "Ana menü",
-    "toggleTheme": "Temayı değiştir"
+    "toggleTheme": "Temayı değiştir",
+    "close": "Kapat"
   },
   "footer": "Yerel oyun · puanı sunucu tutar"
 }

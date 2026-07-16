@@ -40,6 +40,19 @@ interface GameData {
   readonly moves: readonly MoveDto[];
   readonly hintBudget: number;
   readonly hintsUsed: number;
+  /** Play time carried over from prior sessions of this game (0 for a fresh deal). */
+  readonly elapsedMs: number;
+}
+
+/** A finished, won game — everything needed to submit it for verification. */
+export interface GameResult {
+  readonly variant: VariantId;
+  readonly level: number;
+  readonly seed: number;
+  readonly options: Record<string, number>;
+  readonly moves: readonly MoveDto[];
+  readonly score: number;
+  readonly timeMs: number;
 }
 
 export interface Game {
@@ -50,6 +63,8 @@ export interface Game {
   readonly grade: Grade;
   readonly score: number;
   readonly won: boolean;
+  /** Set once when the current game is won; cleared on a new deal. */
+  readonly lastWin: GameResult | null;
   readonly canUndo: boolean;
   readonly hintsRemaining: number;
   readonly hintBudget: number;
@@ -95,6 +110,7 @@ function startLevel(variant: VariantId, drawMode: number): GameData {
     moves: [],
     hintBudget: def.hintBudget,
     hintsUsed: 0,
+    elapsedMs: 0,
   };
 }
 
@@ -124,6 +140,7 @@ function resume(variant: VariantId): GameData | null {
     moves,
     hintBudget: def.hintBudget,
     hintsUsed: saved.hintsUsed,
+    elapsedMs: saved.elapsedMs ?? 0,
   };
 }
 
@@ -139,6 +156,7 @@ function begin(variant: VariantId, drawMode: number): GameData {
       moves: [],
       hintBudget: 0,
       hintsUsed: 0,
+      elapsedMs: 0,
     };
   }
   return resume(variant) ?? startLevel(variant, drawMode);
@@ -158,6 +176,7 @@ export function useGame(initialVariant?: VariantId): Game {
   const [dealNonce, setDealNonce] = useState(0);
   // Klondike: which suit occupies which visual foundation slot (aces claim slots).
   const [foundationSlots, setFoundationSlots] = useState<FoundationSlots>(UNASSIGNED_SLOTS);
+  const [lastWin, setLastWin] = useState<GameResult | null>(null);
   const wonHandled = useRef(false);
   // Stats: a "fresh" deal (no resume) counts as a game played; a resume does not.
   const fresh = useRef(isPlayable(startVariant) && loadSavedGame(startVariant) === null);
@@ -222,6 +241,88 @@ export function useGame(initialVariant?: VariantId): Game {
     [data.variant, model],
   );
 
+  // Session rules: persist unfinished games; a won game clears its save and
+  // advances the level (once).
+  useEffect(() => {
+    if (!supported) {
+      return;
+    }
+    if (won) {
+      if (!wonHandled.current) {
+        wonHandled.current = true;
+        // Total play time = time carried over from prior sessions + this session.
+        const elapsed = data.elapsedMs + (Date.now() - startedAt.current);
+        advanceLevel(progress, data.variant);
+        clearSavedGame(data.variant);
+        recordWin(data.variant, elapsed);
+        // Expose the finished game so an authenticated screen can submit it to
+        // the leaderboard (guests keep this entirely local).
+        setLastWin({
+          variant: data.variant,
+          level: data.level,
+          seed: data.seed,
+          options: data.bag,
+          moves: [...data.moves],
+          score: current ? scoreOf(current) : 0,
+          timeMs: elapsed,
+        });
+      }
+      return;
+    }
+    wonHandled.current = false;
+    saveGame({
+      variant: data.variant,
+      level: data.level,
+      seed: data.seed,
+      bag: data.bag,
+      moves: [...data.moves],
+      hintsUsed: data.hintsUsed,
+      elapsedMs: data.elapsedMs + (Date.now() - startedAt.current),
+    });
+  }, [data, supported, won, current]);
+
+  // Count a fresh deal as a game played (a resume does not count).
+  useEffect(() => {
+    startedAt.current = Date.now();
+    if (fresh.current && isPlayable(data.variant)) {
+      recordGameStarted(data.variant);
+    }
+  }, [dealNonce, data.variant]);
+
+  const commit = useCallback((move: MoveDto) => {
+    setSelected(null);
+    setHint(null);
+    setData((d) => {
+      const cur = d.states[d.states.length - 1];
+      if (!cur) {
+        return d;
+      }
+      const result = applyMove(d.variant, cur, move);
+      if (!result.ok) {
+        return d;
+      }
+      return { ...d, states: [...d.states, result.next], moves: [...d.moves, move] };
+    });
+  }, []);
+
+  const isSelectable = useCallback(
+    (pileId: string, index: number): boolean => {
+      if (!model) {
+        return false;
+      }
+      const pile = findPile(model, pileId);
+      const card = pile?.cards[index];
+      if (!pile || !card || !card.faceUp) {
+        return false;
+      }
+      if (pile.kind === 'waste' || pile.kind === 'foundation') {
+        return index === pile.cards.length - 1; // only the top card
+      }
+      return pile.kind === 'tableau';
+    },
+    [model],
+  );
+
   // A lone ace may be moved between empty foundation slots. The engine keys
   // foundations by suit, so this is UI-only: no engine move, just remap which
   // slot displays that suit (freeing the old one).
@@ -272,74 +373,6 @@ export function useGame(initialVariant?: VariantId): Game {
     [model, current, data.variant, reassignSlot, claimSlot, commit],
   );
 
-  // Session rules: persist unfinished games; a won game clears its save and
-  // advances the level (once).
-  useEffect(() => {
-    if (!supported) {
-      return;
-    }
-    if (won) {
-      if (!wonHandled.current) {
-        wonHandled.current = true;
-        advanceLevel(progress, data.variant);
-        clearSavedGame(data.variant);
-        recordWin(data.variant, Date.now() - startedAt.current);
-      }
-      return;
-    }
-    wonHandled.current = false;
-    saveGame({
-      variant: data.variant,
-      level: data.level,
-      seed: data.seed,
-      bag: data.bag,
-      moves: [...data.moves],
-      hintsUsed: data.hintsUsed,
-    });
-  }, [data, supported, won]);
-
-  // Count a fresh deal as a game played (a resume does not count).
-  useEffect(() => {
-    startedAt.current = Date.now();
-    if (fresh.current && isPlayable(data.variant)) {
-      recordGameStarted(data.variant);
-    }
-  }, [dealNonce, data.variant]);
-
-  const commit = useCallback((move: MoveDto) => {
-    setSelected(null);
-    setHint(null);
-    setData((d) => {
-      const cur = d.states[d.states.length - 1];
-      if (!cur) {
-        return d;
-      }
-      const result = applyMove(d.variant, cur, move);
-      if (!result.ok) {
-        return d;
-      }
-      return { ...d, states: [...d.states, result.next], moves: [...d.moves, move] };
-    });
-  }, []);
-
-  const isSelectable = useCallback(
-    (pileId: string, index: number): boolean => {
-      if (!model) {
-        return false;
-      }
-      const pile = findPile(model, pileId);
-      const card = pile?.cards[index];
-      if (!pile || !card || !card.faceUp) {
-        return false;
-      }
-      if (pile.kind === 'waste' || pile.kind === 'foundation') {
-        return index === pile.cards.length - 1; // only the top card
-      }
-      return pile.kind === 'tableau';
-    },
-    [model],
-  );
-
   const onCardTap = useCallback(
     (pileId: string, index: number) => {
       if (!model || !current) {
@@ -366,7 +399,7 @@ export function useGame(initialVariant?: VariantId): Game {
         setSelected({ pileId, index });
       }
     },
-    [model, current, selected, data.variant, applyGesture, isSelectable],
+    [model, current, selected, data.variant, applyGesture, isSelectable, claimSlot, commit],
   );
 
   const onPileTap = useCallback(
@@ -443,6 +476,7 @@ export function useGame(initialVariant?: VariantId): Game {
     fresh.current = true;
     setSelected(null);
     setHint(null);
+    setLastWin(null);
     setData(startLevel(data.variant, drawRef.current));
     setDealNonce((n) => n + 1);
   }, [data.variant]);
@@ -452,6 +486,7 @@ export function useGame(initialVariant?: VariantId): Game {
     fresh.current = isPlayable(variant) && loadSavedGame(variant) === null;
     setSelected(null);
     setHint(null);
+    setLastWin(null);
     setData(begin(variant, drawRef.current));
     setDealNonce((n) => n + 1);
   }, []);
@@ -464,6 +499,7 @@ export function useGame(initialVariant?: VariantId): Game {
     grade: data.grade,
     score: current ? scoreOf(current) : 0,
     won,
+    lastWin,
     canUndo: data.states.length > 1,
     hintsRemaining: Math.max(0, data.hintBudget - data.hintsUsed),
     hintBudget: data.hintBudget,
