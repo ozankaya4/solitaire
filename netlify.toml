@@ -13,16 +13,17 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# Proxy API calls to the backend (status 200 = rewrite/proxy, not a redirect).
+# 1) Proxy API calls to the backend (status 200 = rewrite/proxy, not a redirect).
+#    This must stay ABOVE the SPA fallback below. Keep the `/api/:splat` suffix.
 [[redirects]]
   from = "/api/*"
-  to = "https://REPLACE-WITH-YOUR-BACKEND.onrender.com/api/:splat"
+  to = "https://solitaire-wgq7.onrender.com/api/:splat"
   status = 200
   force = true
 
-# SPA fallback for any unknown path (defensive; the app is a single page).
+# 2) SPA fallback: any OTHER unknown path serves the app shell. Do not change the
+#    `from`/`to` here — this is not an API rule.
 [[redirects]]
-  from = "/api/*"
-  to = "https://solitaire-wgq7.onrender.com/"
+  from = "/*"
+  to = "/index.html"
   status = 200
-  force = true

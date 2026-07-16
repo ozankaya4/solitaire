@@ -66,17 +66,20 @@ Render and Netlify both build from a GitHub repo, so this comes first.
 2. Click **Create project**. Pick any name and the region closest to you.
    Postgres version default is fine.
 3. After it's created, open **Dashboard → Connect** (or "Connection Details").
-   You'll see a connection string. **Copy the "Connection string" for the
-   pooled connection.** It looks like:
+   **Turn OFF the "Connection pooling" toggle** and copy the **direct** connection
+   string. (Use the direct one, NOT the `-pooler` host — the pooler breaks EF Core
+   migrations, which leaves the database half-created and every request 500s.) It
+   looks like:
    ```
-   postgresql://neondb_owner:npg_fCohYFmI0at6@ep-steep-pine-zaex5uql-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+   postgresql://neondb_owner:npg_XXXX@ep-steep-pine-zaex5uql.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
    ```
+   (Direct host has **no** `-pooler` in it.)
 4. **Convert it to the .NET (Npgsql) format** — the app needs key/value form, not
    the URL form. Take the pieces from the URL and build this single line:
    ```
-   Host=ep-steep-pine-zaex5uql-pooler.c-2.eu-west-2.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=npg_fCohYFmI0at6;SSL Mode=Require;Trust Server Certificate=true
+   Host=ep-steep-pine-zaex5uql.c-2.eu-west-2.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=npg_XXXX;SSL Mode=Require;Trust Server Certificate=true
    ```
-   - `Host` = the part after `@` and before `/`
+   - `Host` = the part after `@` and before `/` (make sure it has **no** `-pooler`)
    - `Database` = the part after the last `/` (before `?`), usually `neondb`
    - `Username` / `Password` = the part before `@` (split on `:`)
 
@@ -134,8 +137,9 @@ https://solitaire-wgq7.onrender.com/
 
 ## Phase 3 — Point the frontend proxy at your API
 
-1. Open `netlify.toml` in the repo. Find the proxy block and replace the
-   placeholder host with your Render URL from Checkpoint 2:
+1. Open `netlify.toml`. There are **two** redirect blocks. Edit **only the first
+   one** (the `/api/*` proxy): replace just the host with your Render URL from
+   Checkpoint 2, keeping `/api/:splat` exactly as-is:
    ```toml
    [[redirects]]
      from = "/api/*"
@@ -143,7 +147,9 @@ https://solitaire-wgq7.onrender.com/
      status = 200
      force = true
    ```
-   Keep the `/api/:splat` suffix exactly as-is.
+   **Do not touch the second block** (`from = "/*"` → `/index.html`) — that's the
+   SPA fallback, not an API rule. You should end up with exactly one `/api/*` rule
+   and one `/*` rule.
 2. Commit and push:
    ```bash
    git add netlify.toml
@@ -219,7 +225,21 @@ pinger like UptimeRobot hitting `/health` every 10 min keeps it warm.)
 build context must be the repo **root** (Phase 2, step 3 — leave Root Directory
 blank). If it's NuGet/restore, just retry the deploy (transient).
 
-**500 on register/login, logs mention the database.** Connection string format
+**`/health` is 200 but register/login/leaderboard all return 500.** The app
+started (so the connection string basically works) but EF Core can't find its
+tables — the schema didn't fully apply. This almost always means migrations ran
+through Neon's **pooled** (`-pooler`) endpoint, which corrupts the migration.
+Fix, in order:
+  1. In Neon → **SQL Editor**, run: `DROP SCHEMA public CASCADE; CREATE SCHEMA public;`
+     (wipes the half-created schema — there's no real data yet).
+  2. In Neon → Connect, switch to the **direct** connection (pooling OFF) and
+     rebuild the `Host=...;` string with the **non-`-pooler`** host.
+  3. In Render → Environment, update `ConnectionStrings__DefaultConnection` to that
+     direct string, then **Manual Deploy → Clear build cache & deploy**.
+  4. Watch the logs for `Applying migration '...AddLevelToLeaderboard'` with no
+     errors, then re-test `/api/leaderboard/klondike` (should be `{"variant"...}`).
+
+**500 on register/login, logs mention auth/SSL/host.** Connection string format
 (Phase 1, step 4). Must be `Host=...;` key/value form with `SSL Mode=Require`.
 
 **Netlify build fails on `npm run build`.** Usually a Node version mismatch —
