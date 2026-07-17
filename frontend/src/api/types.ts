@@ -57,3 +57,28 @@ export interface LeaderboardResponse {
   readonly playerRank: number | null;
   readonly playerBestLevel: number | null;
 }
+
+// -- Cross-device sync --------------------------------------------------------
+
+/** A resumable game as it travels between a device and the account. */
+export interface SyncSave {
+  readonly variant: string;
+  readonly level: number;
+  readonly seed: number;
+  readonly options: Record<string, number>;
+  readonly moves: MoveDto[];
+  readonly hintsUsed: number;
+  readonly elapsedMs: number;
+  /** Client save time (epoch ms); newest wins when two devices conflict. */
+  readonly updatedAt: number;
+}
+
+export interface SyncProgress {
+  readonly variant: string;
+  readonly currentLevel: number;
+}
+
+export interface SyncStateResponse {
+  readonly saves: SyncSave[];
+  readonly progress: SyncProgress[];
+}

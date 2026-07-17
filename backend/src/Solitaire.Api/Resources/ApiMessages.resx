@@ -81,6 +81,13 @@
     <value>Unknown variant '{0}'.</value>
   </data>
 
+  <data name="Sync.IllegalSave" xml:space="preserve">
+    <value>The saved game could not be synced because it contained an illegal move.</value>
+  </data>
+  <data name="Sync.TooManySaves" xml:space="preserve">
+    <value>Too many saved games for this account.</value>
+  </data>
+
   <data name="Identity.DuplicateUserName" xml:space="preserve">
     <value>Username '{0}' is already taken.</value>
   </data>

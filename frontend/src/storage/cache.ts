@@ -17,6 +17,31 @@ interface Snapshot {
 const snapshot: Snapshot = { settings: null, progress: {}, saves: {}, stats: {} };
 let hydrated = false;
 
+// -- Change notification ------------------------------------------------------
+// Lets the UI refresh after a background cloud pull, and lets the sync layer know
+// what to push. 'remote' marks a write that CAME FROM the server, so the sync
+// layer ignores it (it must not echo a pulled value straight back up).
+export type StoreChangeKind = 'save' | 'delete' | 'progress' | 'remote';
+export interface StoreChange {
+  readonly kind: StoreChangeKind;
+  readonly variant?: string;
+}
+type StoreListener = (change: StoreChange) => void;
+let listeners: StoreListener[] = [];
+
+export function subscribeStore(listener: StoreListener): () => void {
+  listeners = [...listeners, listener];
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
+  };
+}
+
+function emit(change: StoreChange): void {
+  for (const listener of listeners) {
+    listener(change);
+  }
+}
+
 async function loadMap<T>(store: 'progress' | 'saves' | 'stats'): Promise<Record<string, T>> {
   const [keys, values] = await Promise.all([idbGetAllKeys(store), idbGetAll<T>(store)]);
   const out: Record<string, T> = {};

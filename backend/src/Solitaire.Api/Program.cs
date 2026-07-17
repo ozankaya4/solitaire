@@ -10,6 +10,7 @@ using Solitaire.Api.Auth;
 using Solitaire.Api.Data;
 using Solitaire.Api.Leaderboard;
 using Solitaire.Api.Security;
+using Solitaire.Api.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -100,7 +101,8 @@ const string CorsPolicy = "frontend";
 var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? ["http://localhost:5173"];
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
-    policy.WithOrigins(allowedOrigins).AllowCredentials().WithMethods("GET", "POST").AllowAnyHeader()));
+    policy.WithOrigins(allowedOrigins).AllowCredentials()
+        .WithMethods("GET", "POST", "PUT", "DELETE").AllowAnyHeader()));
 
 // -- Rate limiting: auth (per IP) and score submissions (per account) --------
 builder.Services.AddRateLimiter(options =>
@@ -114,6 +116,11 @@ builder.Services.AddRateLimiter(options =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 12, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    // Sync writes are chatty (debounced per move burst) — a roomier per-account budget.
+    options.AddPolicy("sync", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 
 // Anti-forgery (double-submit cookie) for authenticated state-changing endpoints.
@@ -185,6 +192,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapAuthEndpoints();
 app.MapLeaderboardEndpoints();
 app.MapAccountEndpoints();
+app.MapSyncEndpoints();
 
 app.Run();
 

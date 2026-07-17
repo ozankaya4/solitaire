@@ -81,6 +81,13 @@
     <value>Bilinmeyen oyun türü: '{0}'.</value>
   </data>
 
+  <data name="Sync.IllegalSave" xml:space="preserve">
+    <value>Kayıtlı oyun geçersiz bir hamle içerdiği için eşitlenemedi.</value>
+  </data>
+  <data name="Sync.TooManySaves" xml:space="preserve">
+    <value>Bu hesap için çok fazla kayıtlı oyun var.</value>
+  </data>
+
   <data name="Identity.DuplicateUserName" xml:space="preserve">
     <value>'{0}' kullanıcı adı zaten alınmış.</value>
   </data>

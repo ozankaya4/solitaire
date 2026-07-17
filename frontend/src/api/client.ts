@@ -13,6 +13,9 @@ import type {
   RegisterRequest,
   SubmitGameRequest,
   SubmitGameResponse,
+  SyncProgress,
+  SyncSave,
+  SyncStateResponse,
   UserResponse,
 } from './types';
 
@@ -84,7 +87,7 @@ async function getCsrfToken(): Promise<string> {
 }
 
 interface RequestOptions {
-  readonly method?: 'GET' | 'POST';
+  readonly method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   readonly body?: unknown;
   /** Attach the anti-forgery header (required for state-changing, cookie-authed calls). */
   readonly csrf?: boolean;
@@ -171,6 +174,21 @@ export const api = {
 
   leaderboard: (variant: string, top = 20) =>
     request<LeaderboardResponse>(`/api/leaderboard/${variant}?top=${top}`),
+
+  // -- Cross-device sync ------------------------------------------------------
+  getSyncState: () => request<SyncStateResponse>('/api/sync'),
+
+  putSave: async (save: SyncSave): Promise<void> => {
+    await request<void>(`/api/sync/saves/${save.variant}`, { method: 'PUT', body: save });
+  },
+
+  deleteRemoteSave: async (variant: string): Promise<void> => {
+    await request<void>(`/api/sync/saves/${variant}`, { method: 'DELETE' });
+  },
+
+  putProgress: async (progress: SyncProgress): Promise<void> => {
+    await request<void>(`/api/sync/progress/${progress.variant}`, { method: 'PUT', body: progress });
+  },
 };
 
 /**
