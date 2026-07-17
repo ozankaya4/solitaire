@@ -16,6 +16,8 @@ interface WinCascadeProps {
   onLeaderboard: () => void;
   /** Signed-in player's rank for this game, or null while pending / unranked. */
   rank: number | null;
+  /** True when the level could not be recorded (offline / server unreachable). */
+  saveFailed: boolean;
   signedIn: boolean;
   onSignIn: () => void;
 }
@@ -25,6 +27,7 @@ export function WinCascade({
   onMenu,
   onLeaderboard,
   rank,
+  saveFailed,
   signedIn,
   onSignIn,
 }: WinCascadeProps) {

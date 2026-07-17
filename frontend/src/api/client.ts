@@ -131,6 +131,18 @@ async function readBody(res: Response): Promise<unknown> {
   }
 }
 
+/**
+ * True for failures worth retrying: the network was unreachable, the request
+ * timed out, or the server erred. A definitive answer (validation, auth, or an
+ * anti-cheat verdict) is never retried — retrying would not change it.
+ */
+export function isRetryable(error: unknown): boolean {
+  if (!(error instanceof ApiError)) {
+    return false;
+  }
+  return error.status === 0 || error.status >= 500 || error.status === 408 || error.status === 429;
+}
+
 export const api = {
   register: (input: RegisterRequest) =>
     request<UserResponse>('/api/auth/register', { method: 'POST', body: input }),
@@ -160,3 +172,25 @@ export const api = {
   leaderboard: (variant: string, top = 20) =>
     request<LeaderboardResponse>(`/api/leaderboard/${variant}?top=${top}`),
 };
+
+/**
+ * Submits a won game, retrying transient failures with a growing delay. The
+ * backend may be asleep (free hosting cold-starts), so the first attempt after
+ * an idle period can time out; losing a hard-won level to that would be cruel.
+ */
+export async function submitGameWithRetry(
+  input: SubmitGameRequest,
+  attempts = 3,
+  delayMs = 2000,
+): Promise<SubmitGameResponse> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await api.submitGame(input);
+    } catch (error) {
+      if (attempt >= attempts || !isRetryable(error)) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
+    }
+  }
+}

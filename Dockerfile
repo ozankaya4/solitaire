@@ -21,6 +21,13 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app ./
 ENV ASPNETCORE_ENVIRONMENT=Production
+# WebApplication.CreateBuilder() watches appsettings.json for changes via inotify.
+# In restricted container sandboxes (e.g. Render) that watcher segfaults the
+# process on startup (exit 139) before any app code runs. Config is baked into the
+# image and never changes at runtime, so turn the watcher off. Belt-and-braces:
+# force polling for any other file watcher rather than inotify.
+ENV DOTNET_hostBuilder__reloadConfigOnChange=false
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
 # The platform (Render/Railway/Fly) injects PORT; Program.cs binds to it.
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "Solitaire.Api.dll"]

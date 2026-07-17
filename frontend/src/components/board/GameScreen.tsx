@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Board } from './Board';
 import { WinCascade } from './WinCascade';
 import { useGame, type GameResult } from '../../board/useGame';
-import { api } from '../../api/client';
+import { submitGameWithRetry } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import { AuthModal } from '../AuthModal';
 import { LeaderboardModal } from '../LeaderboardModal';
@@ -27,6 +27,7 @@ export function GameScreen({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [rank, setRank] = useState<number | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
   const submittedRef = useRef<GameResult | null>(null);
 
   // Submit a won game to the leaderboard when signed in. Re-runs if the player
@@ -36,26 +37,40 @@ export function GameScreen({
     if (!win) {
       submittedRef.current = null;
       setRank(null);
-      return;
+      setSaveFailed(false);
+      return undefined;
     }
     if (!user || submittedRef.current === win) {
-      return;
+      return undefined;
     }
     submittedRef.current = win;
-    api
-      .submitGame({
-        variant: win.variant,
-        seed: win.seed,
-        level: win.level,
-        options: win.options,
-        moves: win.moves,
-        claimedScore: win.score,
-        claimedTimeMs: win.timeMs,
+    setSaveFailed(false);
+    let active = true;
+    submitGameWithRetry({
+      variant: win.variant,
+      seed: win.seed,
+      level: win.level,
+      options: win.options,
+      moves: win.moves,
+      claimedScore: win.score,
+      claimedTimeMs: win.timeMs,
+    })
+      .then((result) => {
+        if (active) {
+          setRank(result.rank);
+        }
       })
-      .then((result) => setRank(result.rank))
       .catch(() => {
-        submittedRef.current = null; // allow a retry (e.g. transient network)
+        // Never fail silently: the player deserves to know the level did not
+        // reach the board (and it stays retryable).
+        if (active) {
+          setSaveFailed(true);
+          submittedRef.current = null;
+        }
       });
+    return () => {
+      active = false;
+    };
   }, [game.lastWin, user]);
 
   if (!game.supported) {
@@ -147,6 +162,7 @@ export function GameScreen({
           onMenu={onExit}
           onLeaderboard={() => setShowLeaderboard(true)}
           rank={rank}
+          saveFailed={saveFailed}
           signedIn={user !== null}
           onSignIn={() => setShowAuth(true)}
         />
