@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError, toApiError } from './client';
+import { ApiError, isRetryable, toApiError } from './client';
 
 describe('toApiError', () => {
   it('maps a ValidationProblem to field errors with a representative message', () => {
@@ -37,5 +37,28 @@ describe('toApiError', () => {
   it('falls back to an offline message for a synthetic status 0', () => {
     const error = toApiError(0, null);
     expect(error.message).toMatch(/reach the server/i);
+  });
+});
+
+describe('isRetryable', () => {
+  it('retries transient failures (unreachable, timeout, throttled, server error)', () => {
+    // A sleeping free-tier backend surfaces as 0 (unreachable) or a 5xx.
+    expect(isRetryable(new ApiError(0, 'offline'))).toBe(true);
+    expect(isRetryable(new ApiError(408, 'timeout'))).toBe(true);
+    expect(isRetryable(new ApiError(429, 'slow down'))).toBe(true);
+    expect(isRetryable(new ApiError(500, 'boom'))).toBe(true);
+    expect(isRetryable(new ApiError(502, 'bad gateway'))).toBe(true);
+  });
+
+  it('does not retry definitive answers — retrying cannot change them', () => {
+    expect(isRetryable(new ApiError(400, 'validation'))).toBe(false);
+    expect(isRetryable(new ApiError(401, 'unauthenticated'))).toBe(false);
+    expect(isRetryable(new ApiError(409, 'duplicate game'))).toBe(false);
+    // 422 = the anti-cheat rejected the submission; never hammer it.
+    expect(isRetryable(new ApiError(422, 'failed verification'))).toBe(false);
+  });
+
+  it('does not retry non-ApiError throwables', () => {
+    expect(isRetryable(new Error('bug'))).toBe(false);
   });
 });
