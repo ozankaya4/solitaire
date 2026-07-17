@@ -114,6 +114,12 @@ automatically on first boot.)
    | `Database__Provider` | `Postgres` |
    | `ASPNETCORE_ENVIRONMENT` | `Production` |
 
+   ⚠️ **The keys use DOUBLE underscores** (`__`), not single. .NET maps `A__B` to
+   the setting `A:B`; a single underscore is silently ignored and the app falls
+   back to an empty SQLite database (every request then 500s with
+   `no such table`). Copy the key names exactly — this is the #1 cause of a
+   "deployed but auth 500s" failure.
+
    (Render sets `PORT` for you — the app already reads it. Don't set it yourself.)
 5. Click **Create Web Service**. The first build takes a few minutes (it compiles
    the .NET app in Docker). Watch the **Logs** tab.
@@ -226,18 +232,24 @@ build context must be the repo **root** (Phase 2, step 3 — leave Root Director
 blank). If it's NuGet/restore, just retry the deploy (transient).
 
 **`/health` is 200 but register/login/leaderboard all return 500.** The app
-started (so the connection string basically works) but EF Core can't find its
-tables — the schema didn't fully apply. This almost always means migrations ran
-through Neon's **pooled** (`-pooler`) endpoint, which corrupts the migration.
-Fix, in order:
-  1. In Neon → **SQL Editor**, run: `DROP SCHEMA public CASCADE; CREATE SCHEMA public;`
-     (wipes the half-created schema — there's no real data yet).
-  2. In Neon → Connect, switch to the **direct** connection (pooling OFF) and
-     rebuild the `Host=...;` string with the **non-`-pooler`** host.
-  3. In Render → Environment, update `ConnectionStrings__DefaultConnection` to that
-     direct string, then **Manual Deploy → Clear build cache & deploy**.
-  4. Watch the logs for `Applying migration '...AddLevelToLeaderboard'` with no
-     errors, then re-test `/api/leaderboard/klondike` (should be `{"variant"...}`).
+started but EF Core can't find its tables. Check the Render **runtime logs** for
+the exception, then match it below:
+
+  - **`Microsoft.Data.Sqlite ... no such table`** → the app is on SQLite, i.e. it
+    never read your Postgres settings. **Almost always a single-underscore typo in
+    the env var names.** They MUST be `ConnectionStrings__DefaultConnection` and
+    `Database__Provider` with **double** underscores (`__`). Fix the key names in
+    Render → Environment, redeploy, and the migrations will run on Neon. Confirm
+    with the Neon query `SELECT tablename FROM pg_tables WHERE schemaname='public';`
+    (should list the tables afterwards).
+
+  - **`Npgsql.PostgresException: 42P01 ... relation ... does not exist`** → it did
+    reach Postgres but the schema is half-applied (usually migrations ran through
+    Neon's **pooled** `-pooler` endpoint). Fix: (1) Neon SQL Editor
+    `DROP SCHEMA public CASCADE; CREATE SCHEMA public;`; (2) switch the connection
+    string to the **direct** (non-`-pooler`) host; (3) Render → **Manual Deploy →
+    Clear build cache & deploy**; (4) watch for `Applying migration '...'` with no
+    errors.
 
 **500 on register/login, logs mention auth/SSL/host.** Connection string format
 (Phase 1, step 4). Must be `Host=...;` key/value form with `SSL Mode=Require`.

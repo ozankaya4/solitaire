@@ -26,15 +26,36 @@ if (!string.IsNullOrWhiteSpace(port))
 
 // -- Database: SQLite for dev/test, PostgreSQL (Npgsql) for prod -------------
 // Provider is chosen by config (Database:Provider), defaulting by environment.
-var provider = config["Database:Provider"]
-    ?? (env.IsProduction() ? "Postgres" : "Sqlite");
+// Blank values (the appsettings.json placeholders, or a mis-typed env var) count
+// as "unset" so an empty string doesn't defeat the environment default.
+var configuredProvider = config["Database:Provider"];
+var provider = string.IsNullOrWhiteSpace(configuredProvider)
+    ? (env.IsProduction() ? "Postgres" : "Sqlite")
+    : configuredProvider.Trim();
+var usePostgres = string.Equals(provider, "Postgres", StringComparison.OrdinalIgnoreCase);
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
+    // Read the connection string HERE (lazily), not at top level: test hosts
+    // (WebApplicationFactory) inject their connection string during Build, after
+    // top-level statements run. A blank value counts as "unset".
     var connectionString = config.GetConnectionString("DefaultConnection");
-    if (string.Equals(provider, "Postgres", StringComparison.OrdinalIgnoreCase))
+    if (string.IsNullOrWhiteSpace(connectionString))
     {
-        options.UseNpgsql(connectionString
-            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required for Postgres."));
+        connectionString = null;
+    }
+
+    if (usePostgres)
+    {
+        // Fail loudly rather than silently falling back to an empty SQLite database
+        // — that only surfaces later as confusing "no such table" 500s. The usual
+        // cause is naming the env var with a single underscore
+        // (ConnectionStrings_DefaultConnection) instead of the double underscore
+        // .NET configuration requires.
+        options.UseNpgsql(connectionString ?? throw new InvalidOperationException(
+            "Database:Provider is 'Postgres' but no connection string was found. Set the "
+            + "ConnectionStrings__DefaultConnection environment variable (note the DOUBLE "
+            + "underscores — a single underscore is ignored by .NET configuration)."));
     }
     else
     {
@@ -116,7 +137,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (string.Equals(provider, "Postgres", StringComparison.OrdinalIgnoreCase))
+    if (usePostgres)
     {
         db.Database.Migrate();
     }
