@@ -765,6 +765,15 @@
   margin-bottom: var(--space-sm);
 }
 
+.win__savefail {
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-xs);
+  line-height: var(--leading);
+  color: var(--color-danger);
+  max-width: 28ch;
+  margin-inline: auto;
+}
+
 /* -- Responsive uplift (still phone-first) -------------------------------- */
 @media (min-width: 40rem) {
   .screen {

@@ -48,6 +48,7 @@
     "unranked": "Sıralamaya girmek için giriş yapmışken bir seviye kazan.",
     "signedOut": "Seviyeni buraya kaydetmek için giriş yap.",
     "ranked": "Sıralama #{{rank}}",
+    "saveFailed": "Sunucuya ulaşılamadı — bu seviye skor tablosuna eklenmedi.",
     "view": "Skor tablosunu gör",
     "signInToSave": "Seviyeni kaydetmek için giriş yap"
   },

@@ -92,6 +92,11 @@ export function WinCascade({
           {rank != null ? (
             <p className="win__rank">{t('leaderboard.ranked', { rank })}</p>
           ) : null}
+          {saveFailed ? (
+            <p className="win__savefail" role="alert">
+              {t('leaderboard.saveFailed')}
+            </p>
+          ) : null}
           {signedIn ? (
             <button type="button" className="btn btn--block win__lboard" onClick={onLeaderboard}>
               {t('leaderboard.view')}

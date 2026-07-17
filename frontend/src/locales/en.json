@@ -48,6 +48,7 @@
     "unranked": "Win a level while signed in to join the board.",
     "signedOut": "Sign in to record your level here.",
     "ranked": "Ranked #{{rank}}",
+    "saveFailed": "Couldn't reach the server — this level wasn't added to the leaderboard.",
     "view": "View leaderboard",
     "signInToSave": "Sign in to save your level"
   },
