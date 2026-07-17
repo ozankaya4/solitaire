@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { deleteSave, getStats, listSaves } from '../storage/cache';
+import { deleteSave, getStats, listSaves, subscribeStore } from '../storage/cache';
 import type { SavedGame } from '../storage/types';
 import type { VariantId } from '../app/types';
 import { ArrowLeftIcon, BookmarkStackIcon, PlayIcon } from '../icons/icons';
@@ -25,6 +25,10 @@ export function SavedGamesScreen({
 }) {
   const { t } = useTranslation();
   const [saves, setSaves] = useState<SavedGame[]>(() => listSaves());
+
+  // Refresh when the store changes — e.g. a cloud pull brought in another device's
+  // saved games while this screen is open.
+  useEffect(() => subscribeStore(() => setSaves(listSaves())), []);
 
   const remove = (variant: VariantId) => {
     deleteSave(variant);

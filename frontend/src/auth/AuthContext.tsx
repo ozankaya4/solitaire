@@ -5,6 +5,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../api/client';
 import type { LoginRequest, RegisterRequest, UserResponse } from '../api/types';
+import { startCloudSync, stopCloudSync } from '../storage/cloudSync';
 
 interface AuthContextValue {
   /** The signed-in user, or null when anonymous. */
@@ -43,6 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
     };
   }, []);
+
+  // Mirror the game data to/from the account while signed in (cross-device sync).
+  useEffect(() => {
+    if (user) {
+      startCloudSync(user.id);
+    } else {
+      stopCloudSync();
+    }
+  }, [user]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

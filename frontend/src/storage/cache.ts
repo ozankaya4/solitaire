@@ -161,9 +161,21 @@ export function getStoredLevel(variant: string): number | undefined {
   return snapshot.progress[variant];
 }
 
+export function getAllProgress(): Record<string, number> {
+  return { ...snapshot.progress };
+}
+
 export function setStoredLevel(variant: string, level: number): void {
   snapshot.progress[variant] = level;
   void idbPut('progress', variant, level).catch(() => undefined);
+  emit({ kind: 'progress', variant });
+}
+
+/** Applies progress pulled from the server (does not trigger a push back up). */
+export function applyRemoteProgress(variant: string, level: number): void {
+  snapshot.progress[variant] = level;
+  void idbPut('progress', variant, level).catch(() => undefined);
+  emit({ kind: 'remote', variant });
 }
 
 // -- Saved games --------------------------------------------------------------
@@ -179,11 +191,37 @@ export function listSaves(): SavedGame[] {
 export function putSave(save: SavedGame): void {
   snapshot.saves[save.variant] = save;
   void idbPut('saves', save.variant, save).catch(() => undefined);
+  emit({ kind: 'save', variant: save.variant });
 }
 
 export function deleteSave(variant: VariantId): void {
   delete snapshot.saves[variant];
   void idbDelete('saves', variant).catch(() => undefined);
+  emit({ kind: 'delete', variant });
+}
+
+/** Applies a saved game pulled from the server (does not trigger a push back up). */
+export function applyRemoteSave(save: SavedGame): void {
+  snapshot.saves[save.variant] = save;
+  void idbPut('saves', save.variant, save).catch(() => undefined);
+  emit({ kind: 'remote', variant: save.variant });
+}
+
+/**
+ * Wipes local saves + progress (not settings/stats). Used when a different account
+ * signs in on a shared device, so one account never adopts another's games. Emits
+ * a 'remote' change so the UI refreshes without pushing the deletions to a server.
+ */
+export function clearGameData(): void {
+  for (const variant of Object.keys(snapshot.saves)) {
+    void idbDelete('saves', variant).catch(() => undefined);
+  }
+  for (const variant of Object.keys(snapshot.progress)) {
+    void idbDelete('progress', variant).catch(() => undefined);
+  }
+  snapshot.saves = {};
+  snapshot.progress = {};
+  emit({ kind: 'remote' });
 }
 
 // -- Stats --------------------------------------------------------------------
