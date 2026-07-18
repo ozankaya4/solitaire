@@ -88,6 +88,7 @@ describe('common interface', () => {
   it('resolves engines by variant id (case-insensitive)', () => {
     expect(solitaireEngines.for('klondike').variant).toBe('klondike');
     expect(solitaireEngines.for('SPIDER').variant).toBe('spider');
-    expect(() => solitaireEngines.for('freecell')).toThrow();
+    expect(solitaireEngines.for('FREECELL').variant).toBe('freecell');
+    expect(() => solitaireEngines.for('pyramid')).toThrow();
   });
 });

@@ -151,7 +151,7 @@ describe('level providers', () => {
   });
 
   it('throws for an unregistered variant', () => {
-    expect(() => getLevelProvider('freecell')).toThrow();
+    expect(() => getLevelProvider('pyramid')).toThrow();
   });
 });
 

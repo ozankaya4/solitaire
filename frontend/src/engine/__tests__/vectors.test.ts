@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import klondikeJson from '../../../../shared/vectors/klondike.json';
 import spiderJson from '../../../../shared/vectors/spider.json';
+import freecellJson from '../../../../shared/vectors/freecell.json';
 import { solitaireEngines } from '../engines';
 import type { GameDefinition } from '../types';
 
@@ -24,7 +25,7 @@ interface VectorFile {
   readonly vectors: readonly Vector[];
 }
 
-const files: readonly VectorFile[] = [klondikeJson, spiderJson];
+const files: readonly VectorFile[] = [klondikeJson, spiderJson, freecellJson];
 
 for (const file of files) {
   const title = file.description.split('.')[0] ?? 'vectors';

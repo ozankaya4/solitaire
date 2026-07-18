@@ -26,7 +26,11 @@ export function findPile(model: BoardModel, id: string): Pile | undefined {
   if (model.waste?.id === id) {
     return model.waste;
   }
-  return model.foundations.find((p) => p.id === id) ?? model.tableau.find((p) => p.id === id);
+  return (
+    model.foundations.find((p) => p.id === id) ??
+    model.freeCells?.find((p) => p.id === id) ??
+    model.tableau.find((p) => p.id === id)
+  );
 }
 
 const legal = (variant: VariantId, state: AnyState, move: MoveDto): MoveDto | null =>
@@ -56,6 +60,64 @@ export function moveBetween(
         destination: dest.index,
         count,
       });
+    }
+    return null;
+  }
+
+  if (variant === 'freecell') {
+    const movingCard = src.cards[srcIndex]?.card;
+    if (!movingCard) {
+      return null;
+    }
+    // Same ace-anywhere foundation UX as Klondike (see the shared comment above).
+    if (dest.kind === 'foundation' || dest.kind === 'fslot') {
+      if (dest.kind === 'foundation' && Number(movingCard.suit) !== dest.index) {
+        return null;
+      }
+      if (dest.kind === 'fslot' && movingCard.rank !== 1) {
+        return null;
+      }
+      if (src.kind === 'tableau' && count === 1) {
+        return legal(variant, state, { type: 'TableauToFoundation', source: src.index });
+      }
+      if (src.kind === 'freecell') {
+        return legal(variant, state, { type: 'FreeCellToFoundation', source: src.index });
+      }
+      return null;
+    }
+    if (dest.kind === 'freecell') {
+      if (src.kind === 'tableau' && count === 1) {
+        return legal(variant, state, {
+          type: 'TableauToFreeCell',
+          source: src.index,
+          destination: dest.index,
+        });
+      }
+      return null;
+    }
+    if (dest.kind === 'tableau') {
+      if (src.kind === 'tableau') {
+        return legal(variant, state, {
+          type: 'TableauToTableau',
+          source: src.index,
+          destination: dest.index,
+          count,
+        });
+      }
+      if (src.kind === 'freecell') {
+        return legal(variant, state, {
+          type: 'FreeCellToTableau',
+          source: src.index,
+          destination: dest.index,
+        });
+      }
+      if (src.kind === 'foundation') {
+        return legal(variant, state, {
+          type: 'FoundationToTableau',
+          source: src.index,
+          destination: dest.index,
+        });
+      }
     }
     return null;
   }
@@ -120,10 +182,19 @@ export function autoMove(
   srcId: string,
   srcIndex: number,
 ): AutoMove | null {
-  const dests: string[] =
-    variant === 'spider'
-      ? model.tableau.map((p) => p.id)
-      : [...model.foundations.map((p) => p.id), ...model.tableau.map((p) => p.id)];
+  let dests: string[];
+  if (variant === 'spider') {
+    dests = model.tableau.map((p) => p.id);
+  } else if (variant === 'freecell') {
+    // Free cells are a last resort — foundations and tableau placements first.
+    dests = [
+      ...model.foundations.map((p) => p.id),
+      ...model.tableau.map((p) => p.id),
+      ...(model.freeCells?.map((p) => p.id) ?? []),
+    ];
+  } else {
+    dests = [...model.foundations.map((p) => p.id), ...model.tableau.map((p) => p.id)];
+  }
 
   for (const destId of dests) {
     const move = moveBetween(variant, state, model, srcId, srcIndex, destId);
@@ -134,7 +205,7 @@ export function autoMove(
   return null;
 }
 
-/** Double-tap: send the card straight to its foundation (Klondike only). */
+/** Double-tap: send the card straight to its foundation (Klondike + FreeCell). */
 export function autoToFoundation(
   variant: VariantId,
   state: AnyState,
@@ -142,7 +213,7 @@ export function autoToFoundation(
   srcId: string,
   srcIndex: number,
 ): MoveDto | null {
-  if (variant !== 'klondike') {
+  if (variant !== 'klondike' && variant !== 'freecell') {
     return autoMove(variant, state, model, srcId, srcIndex)?.move ?? null;
   }
   const src = parsePile(srcId);
@@ -151,6 +222,9 @@ export function autoToFoundation(
   }
   if (src.kind === 'tableau') {
     return legal(variant, state, { type: 'TableauToFoundation', source: src.index });
+  }
+  if (src.kind === 'freecell') {
+    return legal(variant, state, { type: 'FreeCellToFoundation', source: src.index });
   }
   return null;
 }

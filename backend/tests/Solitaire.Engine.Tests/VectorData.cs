@@ -40,13 +40,14 @@ internal static class VectorData
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public static IReadOnlyList<string> FileNames { get; } = ["klondike.json", "spider.json"];
+    public static IReadOnlyList<string> FileNames { get; } = ["klondike.json", "spider.json", "freecell.json"];
 
     /// <summary>All canonical vector definitions for a given file/variant family.</summary>
     public static IReadOnlyList<VectorCase> BuildCases(string fileName) => fileName switch
     {
         "klondike.json" => BuildKlondikeCases(),
         "spider.json" => BuildSpiderCases(),
+        "freecell.json" => BuildFreeCellCases(),
         _ => throw new ArgumentOutOfRangeException(nameof(fileName), fileName, "Unknown vector file."),
     };
 
@@ -157,4 +158,28 @@ internal static class VectorData
             seed,
             new Dictionary<string, int> { ["suitCount"] = options.SuitCount },
             moves.Select(global::Solitaire.Engine.Spider.ToDto).ToList());
+
+    // ---- FreeCell -----------------------------------------------------------
+
+    private static IReadOnlyList<VectorCase> BuildFreeCellCases()
+    {
+        // Like Spider, FreeCell's branching factor (8 columns, free cells,
+        // supermoves, any-card-on-empty) makes it not reliably solvable by a
+        // simple search within a small budget, so these are realistic greedy
+        // playthroughs rather than guaranteed wins — see FreeCellSolver's remarks.
+        return
+        [
+            FreeCellCase("freecell-seed1-play", 1, FreeCellSolver.GreedyPlaythrough(1, 300)),
+            FreeCellCase("freecell-seed2-play", 2, FreeCellSolver.GreedyPlaythrough(2, 300)),
+            FreeCellCase("freecell-seed3-short", 3, FreeCellSolver.GreedyPlaythrough(3, 10)),
+        ];
+    }
+
+    private static VectorCase FreeCellCase(string name, int seed, IReadOnlyList<FreeCellMove> moves) =>
+        new(
+            name,
+            "freecell",
+            seed,
+            new Dictionary<string, int>(),
+            moves.Select(global::Solitaire.Engine.FreeCell.ToDto).ToList());
 }

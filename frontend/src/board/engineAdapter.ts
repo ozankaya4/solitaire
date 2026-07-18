@@ -2,6 +2,13 @@
 // variant uniformly (create, legal moves, apply, win, score).
 
 import {
+  freecellGetLegalMoves,
+  freecellIsWon,
+  freecellNewGame,
+  freecellTryApplyMove,
+  type FreeCellState,
+} from '../engine/freecell';
+import {
   klondikeGetLegalMoves,
   klondikeIsWon,
   klondikeNewGame,
@@ -20,11 +27,13 @@ import {
 import type { MoveDto } from '../engine/types';
 import type { VariantId } from '../app/types';
 
-export type AnyState = KlondikeState | SpiderState;
+export type AnyState = KlondikeState | SpiderState | FreeCellState;
+
+const PLAYABLE_VARIANTS: readonly VariantId[] = ['klondike', 'spider', 'freecell'];
 
 /** Variants that currently have a playable TypeScript engine + board. */
 export function isPlayable(variant: VariantId): boolean {
-  return variant === 'klondike' || variant === 'spider';
+  return PLAYABLE_VARIANTS.includes(variant);
 }
 
 export function createGame(
@@ -32,16 +41,25 @@ export function createGame(
   seed: number,
   bag: Readonly<Record<string, number>>,
 ): AnyState {
-  if (variant === 'spider') {
-    return spiderNewGame(seed, spiderOptionsFromBag(bag));
+  switch (variant) {
+    case 'spider':
+      return spiderNewGame(seed, spiderOptionsFromBag(bag));
+    case 'freecell':
+      return freecellNewGame(seed);
+    default:
+      return klondikeNewGame(seed, klondikeOptionsFromBag(bag));
   }
-  return klondikeNewGame(seed, klondikeOptionsFromBag(bag));
 }
 
 export function legalMoves(variant: VariantId, state: AnyState): MoveDto[] {
-  return variant === 'spider'
-    ? spiderGetLegalMoves(state as SpiderState)
-    : klondikeGetLegalMoves(state as KlondikeState);
+  switch (variant) {
+    case 'spider':
+      return spiderGetLegalMoves(state as SpiderState);
+    case 'freecell':
+      return freecellGetLegalMoves(state as FreeCellState);
+    default:
+      return klondikeGetLegalMoves(state as KlondikeState);
+  }
 }
 
 export interface ApplyResult {
@@ -51,15 +69,25 @@ export interface ApplyResult {
 }
 
 export function applyMove(variant: VariantId, state: AnyState, move: MoveDto): ApplyResult {
-  return variant === 'spider'
-    ? spiderTryApplyMove(state as SpiderState, move)
-    : klondikeTryApplyMove(state as KlondikeState, move);
+  switch (variant) {
+    case 'spider':
+      return spiderTryApplyMove(state as SpiderState, move);
+    case 'freecell':
+      return freecellTryApplyMove(state as FreeCellState, move);
+    default:
+      return klondikeTryApplyMove(state as KlondikeState, move);
+  }
 }
 
 export function isWon(variant: VariantId, state: AnyState): boolean {
-  return variant === 'spider'
-    ? spiderIsWon(state as SpiderState)
-    : klondikeIsWon(state as KlondikeState);
+  switch (variant) {
+    case 'spider':
+      return spiderIsWon(state as SpiderState);
+    case 'freecell':
+      return freecellIsWon(state as FreeCellState);
+    default:
+      return klondikeIsWon(state as KlondikeState);
+  }
 }
 
 export function scoreOf(state: AnyState): number {

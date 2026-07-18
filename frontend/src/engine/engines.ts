@@ -2,6 +2,7 @@
 // SolitaireEngines.cs. Lets callers resolve an engine and verify any variant
 // uniformly through the common SolitaireEngine interface.
 
+import { freecellEngine } from './freecell';
 import { klondikeEngine } from './klondike';
 import { spiderEngine } from './spider';
 import type { SolitaireEngine } from './types';
@@ -9,6 +10,7 @@ import type { SolitaireEngine } from './types';
 const registry: Readonly<Record<string, SolitaireEngine>> = {
   [klondikeEngine.variant]: klondikeEngine,
   [spiderEngine.variant]: spiderEngine,
+  [freecellEngine.variant]: freecellEngine,
 };
 
 export const solitaireEngines = {

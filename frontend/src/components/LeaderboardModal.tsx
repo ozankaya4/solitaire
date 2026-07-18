@@ -12,7 +12,7 @@ import { Modal } from './Modal';
 import { Segmented } from './Segmented';
 import { variantIcon } from './variantIcon';
 
-const RANKED: readonly VariantId[] = ['klondike', 'spider'];
+const RANKED: readonly VariantId[] = ['klondike', 'spider', 'freecell'];
 
 function formatTime(ms: number): string {
   const total = Math.round(ms / 1000);

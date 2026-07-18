@@ -2,6 +2,7 @@
 // Move ranking is a lightweight heuristic (progress-first); the actual legality
 // always comes from the engine, so a hint is always a playable move.
 
+import { freecellGetLegalMoves, type FreeCellState } from '../engine/freecell';
 import { klondikeGetLegalMoves, type KlondikeState } from '../engine/klondike';
 import { spiderGetLegalMoves, type SpiderState } from '../engine/spider';
 import { faceUpCount } from '../engine/tableau';
@@ -17,13 +18,23 @@ export function getSpiderHint(state: SpiderState): MoveDto | null {
   return best(spiderGetLegalMoves(state), (m) => spiderPriority(state, m));
 }
 
+/** Returns one good legal FreeCell move, or null if none exist. */
+export function getFreeCellHint(state: FreeCellState): MoveDto | null {
+  return best(freecellGetLegalMoves(state), (m) => freecellPriority(m));
+}
+
 /** Variant-dispatching hint used by the game layer. */
-export function getHint(variant: string, state: KlondikeState | SpiderState): MoveDto | null {
+export function getHint(
+  variant: string,
+  state: KlondikeState | SpiderState | FreeCellState,
+): MoveDto | null {
   switch (variant) {
     case 'klondike':
       return getKlondikeHint(state as KlondikeState);
     case 'spider':
       return getSpiderHint(state as SpiderState);
+    case 'freecell':
+      return getFreeCellHint(state as FreeCellState);
     default:
       return null;
   }
@@ -92,4 +103,23 @@ function spiderPriority(state: SpiderState, move: MoveDto): number {
     return 80; // exposes a hidden card
   }
   return dest.cards.length === 0 ? 30 : 50;
+}
+
+function freecellPriority(move: MoveDto): number {
+  switch (move.type) {
+    case 'TableauToFoundation':
+    case 'FreeCellToFoundation':
+      return 100;
+    // Longer supermoves make more visible progress than shuffling one card.
+    case 'TableauToTableau':
+      return 60 + (move.count ?? 1);
+    case 'FreeCellToTableau':
+      return 50; // unloading a free cell frees a resource
+    case 'TableauToFreeCell':
+      return 20; // parking a card is a last resort, but still worth suggesting
+    case 'FoundationToTableau':
+      return 5;
+    default:
+      return 0;
+  }
 }

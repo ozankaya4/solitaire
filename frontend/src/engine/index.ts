@@ -48,4 +48,16 @@ export {
   type SpiderState,
 } from './spider';
 
+export {
+  freecellEngine,
+  freecellGetLegalMoves,
+  freecellIsWon,
+  freecellNewGame,
+  freecellReplay,
+  freecellTryApplyMove,
+  FREECELL_FREE_CELL_COUNT,
+  FREECELL_TABLEAU_COUNT,
+  type FreeCellState,
+} from './freecell';
+
 export { solitaireEngines } from './engines';

@@ -9,12 +9,13 @@
 
 import type { Card } from '../engine/cards';
 import { ordinalIndex } from '../engine/cards';
+import type { FreeCellState } from '../engine/freecell';
 import type { KlondikeState } from '../engine/klondike';
 import type { SpiderState } from '../engine/spider';
 import type { AnyState } from './engineAdapter';
 import type { VariantId } from '../app/types';
 
-export type PileKind = 'stock' | 'waste' | 'foundation' | 'tableau';
+export type PileKind = 'stock' | 'waste' | 'foundation' | 'tableau' | 'freecell';
 
 export interface RenderCard {
   /** Stable identity for move animations (unique for Klondike; occurrence-tagged for Spider). */
@@ -36,6 +37,8 @@ export interface BoardModel {
   readonly waste?: Pile;
   readonly foundations: readonly Pile[];
   readonly tableau: readonly Pile[];
+  /** FreeCell: the four holding cells (each 0 or 1 cards). */
+  readonly freeCells?: readonly Pile[];
   /** Spider: completed K→A sequences (0..8). */
   readonly completed?: number;
   /** Klondike: cards flipped per draw (drives the waste fan). */
@@ -47,7 +50,9 @@ export type FoundationSlots = readonly (number | null)[];
 export const UNASSIGNED_SLOTS: FoundationSlots = [null, null, null, null];
 
 export function pileId(kind: PileKind, index = 0): string {
-  return kind === 'tableau' || kind === 'foundation' ? `${kind}-${index}` : kind;
+  return kind === 'tableau' || kind === 'foundation' || kind === 'freecell'
+    ? `${kind}-${index}`
+    : kind;
 }
 
 export function boardModel(
@@ -55,9 +60,40 @@ export function boardModel(
   state: AnyState,
   foundationSlots: FoundationSlots = [0, 1, 2, 3],
 ): BoardModel {
-  return variant === 'spider'
-    ? spiderModel(state as SpiderState)
-    : klondikeModel(state as KlondikeState, foundationSlots);
+  switch (variant) {
+    case 'spider':
+      return spiderModel(state as SpiderState);
+    case 'freecell':
+      return freecellModel(state as FreeCellState, foundationSlots);
+    default:
+      return klondikeModel(state as KlondikeState, foundationSlots);
+  }
+}
+
+// Foundations in display-slot order: an assigned slot shows its suit's pile (id
+// stays foundation-{suit} so hints/moves address it by suit); an unassigned
+// slot is an empty placeholder that accepts any ace. Shared by every variant
+// whose foundations are suit-keyed with 0..13 ranks (Klondike, FreeCell).
+function foundationPiles(
+  foundationRanks: readonly number[],
+  slots: FoundationSlots,
+  cardKey: (card: Card) => string,
+): Pile[] {
+  return slots.map((suit, slot) => {
+    if (suit === null) {
+      return { id: `fslot-${slot}`, kind: 'foundation', index: slot, cards: [] };
+    }
+    const topRank = foundationRanks[suit] ?? 0;
+    return {
+      id: pileId('foundation', suit),
+      kind: 'foundation',
+      index: suit,
+      cards: Array.from({ length: topRank }, (_, i) => {
+        const card: Card = { suit, rank: i + 1 };
+        return { key: cardKey(card), card, faceUp: true };
+      }),
+    };
+  });
 }
 
 function klondikeModel(state: KlondikeState, slots: FoundationSlots): BoardModel {
@@ -76,24 +112,7 @@ function klondikeModel(state: KlondikeState, slots: FoundationSlots): BoardModel
     cards: state.waste.map((card) => ({ key: cardKey(card), card, faceUp: true })),
   };
 
-  // Foundations in display-slot order: an assigned slot shows its suit's pile
-  // (id stays foundation-{suit} so hints/moves address it by suit); an
-  // unassigned slot is an empty placeholder that accepts any ace.
-  const foundations: Pile[] = slots.map((suit, slot) => {
-    if (suit === null) {
-      return { id: `fslot-${slot}`, kind: 'foundation', index: slot, cards: [] };
-    }
-    const topRank = state.foundations[suit] ?? 0;
-    return {
-      id: pileId('foundation', suit),
-      kind: 'foundation',
-      index: suit,
-      cards: Array.from({ length: topRank }, (_, i) => {
-        const card: Card = { suit, rank: i + 1 };
-        return { key: cardKey(card), card, faceUp: true };
-      }),
-    };
-  });
+  const foundations = foundationPiles(state.foundations, slots, cardKey);
 
   const tableau: Pile[] = state.tableau.map((pile, index) => ({
     id: pileId('tableau', index),
@@ -149,5 +168,32 @@ function spiderModel(state: SpiderState): BoardModel {
     foundations: [],
     tableau,
     completed: state.completedSequences,
+  };
+}
+
+function freecellModel(state: FreeCellState, slots: FoundationSlots): BoardModel {
+  const cardKey = (card: Card): string => `f${ordinalIndex(card)}`;
+
+  const foundations = foundationPiles(state.foundations, slots, cardKey);
+
+  const freeCells: Pile[] = state.freeCells.map((card, index) => ({
+    id: pileId('freecell', index),
+    kind: 'freecell',
+    index,
+    cards: card ? [{ key: cardKey(card), card, faceUp: true }] : [],
+  }));
+
+  const tableau: Pile[] = state.tableau.map((pile, index) => ({
+    id: pileId('tableau', index),
+    kind: 'tableau',
+    index,
+    cards: pile.cards.map((card) => ({ key: cardKey(card), card, faceUp: true })),
+  }));
+
+  return {
+    variant: 'freecell',
+    foundations,
+    freeCells,
+    tableau,
   };
 }

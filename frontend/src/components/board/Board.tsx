@@ -116,7 +116,8 @@ function tableauSpecs(
 
 function buildLayout(model: BoardModel, width: number): Layout {
   const spider = model.variant === 'spider';
-  const cols = spider ? 10 : 7;
+  const freecell = model.variant === 'freecell';
+  const cols = spider ? 10 : freecell ? 8 : 7;
   const gap = Math.max(4, Math.round(width * 0.012));
   const rawW = Math.floor((width - gap * (cols - 1)) / cols);
   const cardW = spider ? Math.max(36, Math.min(52, rawW)) : Math.min(64, rawW);
@@ -127,6 +128,9 @@ function buildLayout(model: BoardModel, width: number): Layout {
   const colX = (i: number): number => i * (cardW + gap);
   const stageW = Math.max(width, colX(cols - 1) + cardW);
   const tabY = cardH + rowGap;
+  // Where dealt cards visually originate from. Klondike/Spider have a real
+  // stock pile to fly in from; FreeCell has none, so the top-left corner (where
+  // the first free cell sits) is used as an unobtrusive, self-consistent origin.
   const stockPos = spider ? { x: stageW - cardW, y: 0 } : { x: colX(0), y: 0 };
   const animateMoves = !spider;
 
@@ -156,8 +160,17 @@ function buildLayout(model: BoardModel, width: number): Layout {
       slotH: cardH,
     });
   }
+  if (model.freeCells) {
+    model.freeCells.forEach((pile, slot) => {
+      const pos = { x: colX(slot), y: 0 };
+      specs.push(...stackedPileSpecs(pile, pos, { topDraggable: true, animateMoves }));
+      zones.push({ id: pile.id, ...pos, w: cardW, h: cardH, slot: true, slotH: cardH });
+    });
+  }
   model.foundations.forEach((pile, slot) => {
-    const pos = { x: colX(3 + slot), y: 0 };
+    // FreeCell's foundations sit right of its 4 free cells; Klondike leaves a
+    // one-column gap after stock+waste before its foundations begin.
+    const pos = { x: colX(freecell ? 4 + slot : 3 + slot), y: 0 };
     specs.push(...stackedPileSpecs(pile, pos, { topDraggable: true, animateMoves }));
     zones.push({
       id: pile.id,

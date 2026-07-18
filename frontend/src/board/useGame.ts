@@ -15,7 +15,6 @@ import { createCacheProgressStore } from '../storage/progressStore';
 import { useSettings } from '../app/settings';
 import type { VariantId } from '../app/types';
 import { boardModel, UNASSIGNED_SLOTS, type BoardModel, type FoundationSlots } from './boardModel';
-import type { KlondikeState } from '../engine/klondike';
 import { applyMove, createGame, isPlayable, isWon, scoreOf, type AnyState } from './engineAdapter';
 import { autoMove, autoToFoundation, findPile, moveBetween, stockMove } from './moves';
 import { clearSavedGame, loadSavedGame, saveGame } from './persistence';
@@ -83,6 +82,12 @@ export interface Game {
 }
 
 const progress = createCacheProgressStore();
+
+// Variants whose foundations are suit-keyed with an "any ace on any empty
+// visual slot" UX (see boardModel's foundationPiles / UNASSIGNED_SLOTS).
+function usesFoundationSlots(variant: VariantId): boolean {
+  return variant === 'klondike' || variant === 'freecell';
+}
 
 function bagFor(
   variant: VariantId,
@@ -194,10 +199,10 @@ export function useGame(initialVariant?: VariantId): Game {
   // foundation emptied (undo), and give any unassigned non-empty suit the first
   // free slot (auto-moves, hints, double-tap, resumed games).
   useEffect(() => {
-    if (data.variant !== 'klondike' || !current) {
+    if (!usesFoundationSlots(data.variant) || !current) {
       return;
     }
-    const foundations = (current as KlondikeState).foundations;
+    const foundations = (current as { foundations: readonly number[] }).foundations;
     setFoundationSlots((prev) => {
       let next: (number | null)[] | null = null;
       prev.forEach((suit, slot) => {
@@ -224,7 +229,7 @@ export function useGame(initialVariant?: VariantId): Game {
   // the moved ace's suit (before the effect above would pick the first free one).
   const claimSlot = useCallback(
     (destId: string, srcId: string, srcIndex: number) => {
-      if (data.variant !== 'klondike' || !destId.startsWith('fslot-') || !model) {
+      if (!usesFoundationSlots(data.variant) || !destId.startsWith('fslot-') || !model) {
         return;
       }
       const slot = Number(destId.slice('fslot-'.length));
@@ -328,7 +333,7 @@ export function useGame(initialVariant?: VariantId): Game {
   // slot displays that suit (freeing the old one).
   const reassignSlot = useCallback(
     (srcId: string, srcIndex: number, destId: string): boolean => {
-      if (data.variant !== 'klondike' || !model || !destId.startsWith('fslot-')) {
+      if (!usesFoundationSlots(data.variant) || !model || !destId.startsWith('fslot-')) {
         return false;
       }
       const src = findPile(model, srcId);
@@ -551,6 +556,25 @@ function hintHighlight(state: AnyState, move: MoveDto): HintHighlight {
         sourceId: `foundation-${move.source ?? 0}`,
         destId: `tableau-${move.destination ?? 0}`,
       };
+    case 'TableauToFreeCell':
+      return {
+        sourceId: `tableau-${move.source ?? 0}`,
+        destId: `freecell-${move.destination ?? 0}`,
+      };
+    case 'FreeCellToTableau':
+      return {
+        sourceId: `freecell-${move.source ?? 0}`,
+        destId: `tableau-${move.destination ?? 0}`,
+      };
+    case 'FreeCellToFoundation': {
+      const cell = (state as { freeCells: readonly (Card | undefined)[] }).freeCells[
+        move.source ?? 0
+      ];
+      return {
+        sourceId: `freecell-${move.source ?? 0}`,
+        destId: `foundation-${cell?.suit ?? 0}`,
+      };
+    }
     default:
       return { sourceId: 'stock' };
   }

@@ -85,4 +85,14 @@ public class VectorFileTests
         Assert.Contains(file.Vectors, v => v.Options["suitCount"] == 2);
         Assert.Contains(file.Vectors, v => v.Options["suitCount"] == 4);
     }
+
+    [Fact]
+    public void FreeCellVectors_AreNonEmpty()
+    {
+        // Unlike Klondike, a guaranteed win is not required here — see
+        // FreeCellSolver's remarks (mirrors Spider's equivalent test).
+        var file = VectorData.BuildFile("freecell.json");
+        Assert.NotEmpty(file.Vectors);
+        Assert.Contains(file.Vectors, v => v.Moves.Count > 0);
+    }
 }
