@@ -1,0 +1,13 @@
+# Netlify redirect rules. This file ships inside the publish directory (Vite
+# copies public/ into dist/ verbatim), and Netlify processes it BEFORE any
+# netlify.toml — so these rules apply no matter which config file Netlify does
+# or doesn't discover. This is the authoritative copy; the netlify.toml files
+# exist only as documentation/backup.
+#
+# 1) Proxy API calls to the backend (200 = server-side rewrite, not a redirect;
+#    the trailing ! forces it). Keeps the auth cookie first-party.
+/api/*  https://solitaire-wgq7.onrender.com/api/:splat  200!
+
+# 2) SPA fallback for any other path WITHOUT force, so real static assets
+#    (hashed JS/CSS, icons, sw.js) are still served normally.
+/*  /index.html  200
