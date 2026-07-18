@@ -190,6 +190,33 @@ if (!isTesting)
 }
 
 app.UseSecurityHeaders();
+
+// -- Bundled SPA (production container) ---------------------------------------
+// The Docker image copies the built frontend into wwwroot so one origin serves
+// both the app and the API: no proxy, no CORS in production, and the auth cookie
+// is trivially first-party. In local dev wwwroot doesn't exist (Vite serves the
+// SPA on :5173) and this whole block is skipped — including in the test host.
+var wwwroot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+bool hasSpa = File.Exists(Path.Combine(wwwroot, "index.html"));
+if (hasSpa)
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        OnPrepareResponse = ctx =>
+        {
+            // Hashed bundles never change → cache forever. Entry points
+            // (index.html, sw.js, manifest, icons) must revalidate so deploys
+            // and service-worker updates reach returning visitors.
+            var path = ctx.Context.Request.Path.Value ?? string.Empty;
+            ctx.Context.Response.Headers.CacheControl =
+                path.StartsWith("/assets/", StringComparison.OrdinalIgnoreCase)
+                    ? "public, max-age=31536000, immutable"
+                    : "no-cache";
+        },
+    });
+}
+
 app.UseRequestLocalization(options =>
 {
     options.SetDefaultCulture("en").AddSupportedCultures(supportedCultures).AddSupportedUICultures(supportedCultures);
@@ -204,6 +231,24 @@ app.MapAuthEndpoints();
 app.MapLeaderboardEndpoints();
 app.MapAccountEndpoints();
 app.MapSyncEndpoints();
+
+if (hasSpa)
+{
+    // SPA fallback: any path no endpoint or file matched serves the app shell
+    // (client-side routing / PWA start URLs). Unknown /api paths stay hard 404s
+    // so API clients get JSON semantics, never HTML.
+    app.MapFallback(async context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+        context.Response.ContentType = "text/html; charset=utf-8";
+        context.Response.Headers.CacheControl = "no-cache";
+        await context.Response.SendFileAsync(Path.Combine(wwwroot, "index.html"));
+    });
+}
 
 app.Run();
 

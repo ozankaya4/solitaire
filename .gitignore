@@ -86,5 +86,6 @@ Thumbs.db
 *~
 .idea/
 
-DEPLOYMENT.md
-1
+/DEPLOYMENT.md
+/deployment.md
+
