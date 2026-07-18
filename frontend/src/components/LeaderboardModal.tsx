@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../api/client';
+import { api, withRetry } from '../api/client';
 import type { LeaderboardResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import type { VariantId } from '../app/types';
@@ -32,8 +32,8 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
     let active = true;
     setStatus('loading');
     setBoard(null);
-    api
-      .leaderboard(variant, 20)
+    // Retried: the first request of a session may hit the free backend's cold start.
+    withRetry(() => api.leaderboard(variant, 20), 3, 3000)
       .then((data) => {
         if (active) {
           setBoard(data);

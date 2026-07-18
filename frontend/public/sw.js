@@ -4,7 +4,7 @@
  * runtime-caching same-origin GETs covers them. Guests play fully offline after
  * the first load; the app never contacts a backend. Bump CACHE to invalidate. */
 
-const CACHE = 'solitaire-cache-v1';
+const CACHE = 'solitaire-cache-v2'; // v2: /api/* is never intercepted or cached
 const PRECACHE = [
   '/',
   '/index.html',
@@ -42,7 +42,13 @@ self.addEventListener('fetch', (event) => {
   }
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
-    return; // never touch cross-origin (and there is no backend anyway)
+    return; // never touch cross-origin
+  }
+  if (url.pathname.startsWith('/api/')) {
+    // Never intercept API calls: they are dynamic and authenticated. Caching them
+    // would freeze the leaderboard/session/sync state at first sight, and the
+    // /api/* proxy only exists on the network, not in any cache.
+    return;
   }
 
   // SPA navigations: network-first, fall back to the cached shell offline.

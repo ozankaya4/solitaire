@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { ApiError, isRetryable, toApiError } from './client';
+import { describe, expect, it, vi } from 'vitest';
+import { ApiError, isRetryable, toApiError, withRetry } from './client';
 
 describe('toApiError', () => {
   it('maps a ValidationProblem to field errors with a representative message', () => {
@@ -60,5 +60,29 @@ describe('isRetryable', () => {
 
   it('does not retry non-ApiError throwables', () => {
     expect(isRetryable(new Error('bug'))).toBe(false);
+  });
+});
+
+describe('withRetry', () => {
+  it('recovers when a transient failure clears (cold start ends)', async () => {
+    const op = vi
+      .fn<() => Promise<string>>()
+      .mockRejectedValueOnce(new ApiError(0, 'offline'))
+      .mockRejectedValueOnce(new ApiError(502, 'bad gateway'))
+      .mockResolvedValue('ok');
+    await expect(withRetry(op, 3, 1)).resolves.toBe('ok');
+    expect(op).toHaveBeenCalledTimes(3);
+  });
+
+  it('gives up immediately on a definitive answer (no hammering)', async () => {
+    const op = vi.fn<() => Promise<string>>().mockRejectedValue(new ApiError(401, 'invalid'));
+    await expect(withRetry(op, 3, 1)).rejects.toMatchObject({ status: 401 });
+    expect(op).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws the last error once attempts are exhausted', async () => {
+    const op = vi.fn<() => Promise<string>>().mockRejectedValue(new ApiError(0, 'offline'));
+    await expect(withRetry(op, 3, 1)).rejects.toMatchObject({ status: 0 });
+    expect(op).toHaveBeenCalledTimes(3);
   });
 });

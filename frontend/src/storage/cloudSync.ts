@@ -6,7 +6,7 @@
 // without a network or a store; this file's side-effecting parts just carry the
 // plan out and wire it to auth + store changes.
 
-import { api } from '../api/client';
+import { api, withRetry } from '../api/client';
 import type { SyncProgress, SyncSave, SyncStateResponse } from '../api/types';
 import type { VariantId } from '../app/types';
 import type { SavedGame } from './types';
@@ -167,7 +167,8 @@ export function stopCloudSync(): void {
 async function reconcile(): Promise<void> {
   let state: SyncStateResponse;
   try {
-    state = await api.getSyncState();
+    // Retried: sign-in is often the session's first API touch (cold start).
+    state = await withRetry(() => api.getSyncState(), 3, 3000);
   } catch {
     return; // offline / server down — local play is unaffected; retry next sign-in
   }

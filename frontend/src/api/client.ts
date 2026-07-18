@@ -192,18 +192,21 @@ export const api = {
 };
 
 /**
- * Submits a won game, retrying transient failures with a growing delay. The
- * backend may be asleep (free hosting cold-starts), so the first attempt after
- * an idle period can time out; losing a hard-won level to that would be cruel.
+ * Runs an API call, retrying transient failures with a growing delay. The free
+ * backend sleeps when idle and takes ~30–60s to wake, during which the proxy
+ * drops requests — so the first call of a session often dies with status 0.
+ * Retrying rides out the cold start instead of surfacing a phantom error.
+ * Only use for idempotent-enough operations (see isRetryable for what qualifies
+ * as transient; definitive server answers are never retried).
  */
-export async function submitGameWithRetry(
-  input: SubmitGameRequest,
+export async function withRetry<T>(
+  operation: () => Promise<T>,
   attempts = 3,
   delayMs = 2000,
-): Promise<SubmitGameResponse> {
+): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     try {
-      return await api.submitGame(input);
+      return await operation();
     } catch (error) {
       if (attempt >= attempts || !isRetryable(error)) {
         throw error;
@@ -211,4 +214,13 @@ export async function submitGameWithRetry(
       await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
     }
   }
+}
+
+/** Submits a won game with retry — losing a hard-won level to a cold start would be cruel. */
+export function submitGameWithRetry(
+  input: SubmitGameRequest,
+  attempts = 3,
+  delayMs = 2000,
+): Promise<SubmitGameResponse> {
+  return withRetry(() => api.submitGame(input), attempts, delayMs);
 }

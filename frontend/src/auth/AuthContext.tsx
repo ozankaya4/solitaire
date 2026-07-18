@@ -3,7 +3,7 @@
 // guests play fully offline, and only signing in enables leaderboard submission.
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api } from '../api/client';
+import { api, withRetry } from '../api/client';
 import type { LoginRequest, RegisterRequest, UserResponse } from '../api/types';
 import { startCloudSync, stopCloudSync } from '../storage/cloudSync';
 
@@ -24,11 +24,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   // Restore the session on first mount. A network failure just leaves the app in
-  // its guest state — the game itself never depends on the server.
+  // its guest state — the game itself never depends on the server. This probe is
+  // also the session's first API touch, so it doubles as the wake-up call for the
+  // sleeping free-tier backend; the retry rides out the cold start.
   useEffect(() => {
     let active = true;
-    void api
-      .me()
+    void withRetry(() => api.me(), 3, 3000)
       .then((me) => {
         if (active) {
           setUser(me);
@@ -58,11 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       loading,
+      // Retried: a cold-starting backend drops the first request of a session
+      // with a phantom "could not reach" — riding it out beats surfacing it.
+      // (If a lost-response register DID land, the retry returns "name taken"
+      // and the player simply logs in.)
       register: async (input) => {
-        setUser(await api.register(input));
+        setUser(await withRetry(() => api.register(input), 3, 3000));
       },
       login: async (input) => {
-        setUser(await api.login(input));
+        setUser(await withRetry(() => api.login(input), 3, 3000));
       },
       logout: async () => {
         // Best-effort: clear the UI even if the network call fails; a stale cookie
