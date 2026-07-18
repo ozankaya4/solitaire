@@ -1,0 +1,35 @@
+# Netlify config for the Solitaire SPA.
+#
+# IMPORTANT: this is a DUPLICATE of the root-level netlify.toml. Netlify's site
+# has "Base directory" set to "frontend" in its dashboard, and once that is set,
+# Netlify reads configuration from netlify.toml INSIDE the base directory on every
+# build — not the repo-root copy (which is only used to pre-fill the dashboard
+# once, at initial import). Keep both files identical; if you change one, change
+# the other the same way.
+#
+# The `/api/*` proxy is the key piece: the browser only ever talks to the Netlify
+# origin, and Netlify forwards API calls to the backend server-side. That keeps
+# the auth cookie first-party (so SameSite=Strict keeps working) with no CORS and
+# no CSP changes. Because the SPA calls its own origin, VITE_API_URL stays unset.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# 1) Proxy API calls to the backend (status 200 = rewrite/proxy, not a redirect).
+#    This must stay ABOVE the SPA fallback below. Keep the `/api/:splat` suffix.
+[[redirects]]
+  from = "/api/*"
+  to = "https://solitaire-wgq7.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# 2) SPA fallback: any OTHER unknown path serves the app shell. Do not change the
+#    `from`/`to` here — this is not an API rule.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

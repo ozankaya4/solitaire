@@ -179,6 +179,13 @@ https://solitaire-wgq7.onrender.com/
    - **Publish directory:** `frontend/dist`
    Leave them as detected. No environment variables are needed (the app calls its
    own origin, so `VITE_API_URL` stays unset in production).
+
+   ⚠️ **Important:** once "Base directory" is `frontend`, Netlify reads its
+   config from `frontend/netlify.toml` on **every** build — not the repo-root
+   copy (that one is only read once, to pre-fill this dashboard at import time).
+   The repo ships **both** files, kept identical, specifically so this can't bite
+   you. If you ever edit the `/api/*` proxy line, edit it in **both**
+   `netlify.toml` and `frontend/netlify.toml`.
 4. Click **Deploy**. After a minute or two you'll get a URL like
    `https://random-name-123.netlify.app`.
 
@@ -222,6 +229,18 @@ leaderboard — on the public URL. 🎉 You're deployed.
 `netlify.toml` is wrong or not deployed. Check Phase 3 — the `to =` must be your
 exact Render URL ending in `/api/:splat`, and you must have pushed + let Netlify
 redeploy.
+
+**Site loads fine, but sign-up/login silently fail (no visible error, or a
+generic network error), and `/health` on Render returns 200.** Almost certainly
+the `frontend/netlify.toml` vs root `netlify.toml` gotcha described in Phase 4 —
+Netlify's "Base directory: frontend" setting makes it read config from
+**`frontend/netlify.toml`**, not the root copy, so the `/api/*` proxy silently
+never applied (the site still builds and loads because those settings came from
+the dashboard, cached at import time). Confirm by opening
+`https://<your-site>.netlify.app/api/leaderboard/klondike` directly in a
+browser: if you see JSON, the proxy works; if you see a 404 page or the app
+shell HTML, it doesn't. Fix: make sure `frontend/netlify.toml` exists and
+matches the root one, commit, push, and trigger a fresh Netlify deploy.
 
 **First request after a while is very slow / times out once.** Expected: Render
 free spins down when idle. Retry; it wakes in ~30–60 s. (Optional: a free uptime
