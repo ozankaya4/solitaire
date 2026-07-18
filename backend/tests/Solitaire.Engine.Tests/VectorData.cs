@@ -41,7 +41,7 @@ internal static class VectorData
     };
 
     public static IReadOnlyList<string> FileNames { get; } =
-        ["klondike.json", "spider.json", "freecell.json", "pyramid.json"];
+        ["klondike.json", "spider.json", "freecell.json", "pyramid.json", "tripeaks.json"];
 
     /// <summary>All canonical vector definitions for a given file/variant family.</summary>
     public static IReadOnlyList<VectorCase> BuildCases(string fileName) => fileName switch
@@ -50,6 +50,7 @@ internal static class VectorData
         "spider.json" => BuildSpiderCases(),
         "freecell.json" => BuildFreeCellCases(),
         "pyramid.json" => BuildPyramidCases(),
+        "tripeaks.json" => BuildTriPeaksCases(),
         _ => throw new ArgumentOutOfRangeException(nameof(fileName), fileName, "Unknown vector file."),
     };
 
@@ -207,4 +208,27 @@ internal static class VectorData
             seed,
             new Dictionary<string, int>(),
             moves.Select(global::Solitaire.Engine.Pyramid.ToDto).ToList());
+
+    // ---- TriPeaks --------------------------------------------------------------
+
+    private static IReadOnlyList<VectorCase> BuildTriPeaksCases()
+    {
+        // Same reasoning as Pyramid/FreeCell/Spider: a greedy (non-backtracking)
+        // line is enough for cross-language parity; win detection itself is
+        // covered by cheap direct unit tests (TriPeaksMoveLegalityTests.IsWon_*).
+        return
+        [
+            TriPeaksCase("tripeaks-seed1-play", 1, TriPeaksSolver.GreedyPlaythrough(1, 200)),
+            TriPeaksCase("tripeaks-seed2-play", 2, TriPeaksSolver.GreedyPlaythrough(2, 200)),
+            TriPeaksCase("tripeaks-seed3-short", 3, TriPeaksSolver.GreedyPlaythrough(3, 8)),
+        ];
+    }
+
+    private static VectorCase TriPeaksCase(string name, int seed, IReadOnlyList<TriPeaksMove> moves) =>
+        new(
+            name,
+            "tripeaks",
+            seed,
+            new Dictionary<string, int>(),
+            moves.Select(global::Solitaire.Engine.TriPeaks.ToDto).ToList());
 }

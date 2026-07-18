@@ -10,7 +10,10 @@ namespace Solitaire.Engine;
 public static class SolitaireEngines
 {
     private static readonly ImmutableDictionary<string, ISolitaireEngine> Registry =
-        new ISolitaireEngine[] { new KlondikeEngine(), new SpiderEngine(), new FreeCellEngine(), new PyramidEngine() }
+        new ISolitaireEngine[]
+        {
+            new KlondikeEngine(), new SpiderEngine(), new FreeCellEngine(), new PyramidEngine(), new TriPeaksEngine(),
+        }
             .ToImmutableDictionary(e => e.Variant, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>All supported variant ids.</summary>

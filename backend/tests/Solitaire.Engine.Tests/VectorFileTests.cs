@@ -103,4 +103,12 @@ public class VectorFileTests
         Assert.NotEmpty(file.Vectors);
         Assert.Contains(file.Vectors, v => v.Moves.Count > 0);
     }
+
+    [Fact]
+    public void TriPeaksVectors_AreNonEmpty()
+    {
+        var file = VectorData.BuildFile("tripeaks.json");
+        Assert.NotEmpty(file.Vectors);
+        Assert.Contains(file.Vectors, v => v.Moves.Count > 0);
+    }
 }

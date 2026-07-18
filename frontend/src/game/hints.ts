@@ -6,6 +6,7 @@ import { freecellGetLegalMoves, type FreeCellState } from '../engine/freecell';
 import { klondikeGetLegalMoves, type KlondikeState } from '../engine/klondike';
 import { pyramidGetLegalMoves, type PyramidState } from '../engine/pyramid';
 import { spiderGetLegalMoves, type SpiderState } from '../engine/spider';
+import { tripeaksGetLegalMoves, type TriPeaksState } from '../engine/tripeaks';
 import { faceUpCount } from '../engine/tableau';
 import type { MoveDto } from '../engine/types';
 
@@ -29,10 +30,15 @@ export function getPyramidHint(state: PyramidState): MoveDto | null {
   return best(pyramidGetLegalMoves(state), (m) => pyramidPriority(m));
 }
 
+/** Returns one good legal TriPeaks move, or null if none exist. */
+export function getTriPeaksHint(state: TriPeaksState): MoveDto | null {
+  return best(tripeaksGetLegalMoves(state), (m) => tripeaksPriority(m));
+}
+
 /** Variant-dispatching hint used by the game layer. */
 export function getHint(
   variant: string,
-  state: KlondikeState | SpiderState | FreeCellState | PyramidState,
+  state: KlondikeState | SpiderState | FreeCellState | PyramidState | TriPeaksState,
 ): MoveDto | null {
   switch (variant) {
     case 'klondike':
@@ -43,6 +49,8 @@ export function getHint(
       return getFreeCellHint(state as FreeCellState);
     case 'pyramid':
       return getPyramidHint(state as PyramidState);
+    case 'tripeaks':
+      return getTriPeaksHint(state as TriPeaksState);
     default:
       return null;
   }
@@ -138,6 +146,19 @@ function pyramidPriority(move: MoveDto): number {
       return 100;
     case 'RemoveSingle':
       return 90;
+    case 'Draw':
+      return 20;
+    case 'Recycle':
+      return 10;
+    default:
+      return 0;
+  }
+}
+
+function tripeaksPriority(move: MoveDto): number {
+  switch (move.type) {
+    case 'PlayToWaste':
+      return 100;
     case 'Draw':
       return 20;
     case 'Recycle':

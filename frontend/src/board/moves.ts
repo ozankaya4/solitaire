@@ -31,6 +31,7 @@ export function findPile(model: BoardModel, id: string): Pile | undefined {
     model.foundations.find((p) => p.id === id) ??
     model.freeCells?.find((p) => p.id === id) ??
     model.pyramid?.find((p) => p.id === id) ??
+    model.tripeaks?.find((p) => p.id === id) ??
     model.tableau.find((p) => p.id === id)
   );
 }
@@ -139,6 +140,14 @@ export function moveBetween(
     return legal(variant, state, { type: 'RemovePair', source: srcPos, destination: destPos });
   }
 
+  if (variant === 'tripeaks') {
+    // A card is played onto the waste directly — no other destination exists.
+    if (src.kind !== 'tripeaks' || dest.kind !== 'waste') {
+      return null;
+    }
+    return legal(variant, state, { type: 'PlayToWaste', source: src.index });
+  }
+
   // Klondike
   const moving = src.cards[srcIndex]?.card;
   if (!moving) {
@@ -209,6 +218,12 @@ export function autoMove(
     const position = src.kind === 'waste' ? PYRAMID_WASTE : src.index;
     const move = legal(variant, state, { type: 'RemoveSingle', source: position });
     return move ? { move, destId: srcId } : null;
+  }
+
+  if (variant === 'tripeaks') {
+    // Single fixed destination — no search needed.
+    const move = moveBetween(variant, state, model, srcId, srcIndex, 'waste');
+    return move ? { move, destId: 'waste' } : null;
   }
 
   let dests: string[];

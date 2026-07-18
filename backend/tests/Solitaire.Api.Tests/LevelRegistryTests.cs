@@ -4,9 +4,9 @@ using Xunit;
 namespace Solitaire.Api.Tests;
 
 /// <summary>
-/// Locks the server's level->seed mapping to the frontend's. The Spider expected
-/// values were produced by the frontend's <c>deriveSeed(variant, level, 0)</c>;
-/// if the port drifts, legitimate Spider wins would stop ranking.
+/// Locks the server's level->seed mapping to the frontend's. The endless-variant
+/// expected values were produced by the frontend's <c>deriveSeed(variant, level, 0)</c>;
+/// if the port drifts, legitimate wins for that variant would stop ranking.
 /// </summary>
 public class LevelRegistryTests
 {
@@ -59,11 +59,22 @@ public class LevelRegistryTests
     }
 
     [Theory]
+    [InlineData(1, -505895154)]
+    [InlineData(2, -1360546133)]
+    [InlineData(10, 1010298118)]
+    [InlineData(999, 129132695)]
+    public void TriPeaksCanonicalSeed_MatchesFrontendDeriveSeed(int level, int expected)
+    {
+        Assert.Equal(expected, _registry.CanonicalSeed("tripeaks", level));
+    }
+
+    [Theory]
     [InlineData("klondike", 0)]
     [InlineData("spider", -3)]
     [InlineData("freecell", -1)]
     [InlineData("pyramid", -1)]
-    [InlineData("tripeaks", 5)] // no server engine / provider yet
+    [InlineData("tripeaks", -1)]
+    [InlineData("canfield", 5)] // no server engine / provider at all
     public void NonPositiveOrUnknown_IsUnrankable(string variant, int level)
     {
         Assert.Null(_registry.CanonicalSeed(variant, level));

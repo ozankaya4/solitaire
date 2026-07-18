@@ -6,6 +6,7 @@ import { freecellEngine } from './freecell';
 import { klondikeEngine } from './klondike';
 import { pyramidEngine } from './pyramid';
 import { spiderEngine } from './spider';
+import { tripeaksEngine } from './tripeaks';
 import type { SolitaireEngine } from './types';
 
 const registry: Readonly<Record<string, SolitaireEngine>> = {
@@ -13,6 +14,7 @@ const registry: Readonly<Record<string, SolitaireEngine>> = {
   [spiderEngine.variant]: spiderEngine,
   [freecellEngine.variant]: freecellEngine,
   [pyramidEngine.variant]: pyramidEngine,
+  [tripeaksEngine.variant]: tripeaksEngine,
 };
 
 export const solitaireEngines = {

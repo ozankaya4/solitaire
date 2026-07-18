@@ -387,6 +387,12 @@ export function useGame(initialVariant?: VariantId): Game {
       if (!model || !current) {
         return;
       }
+      // TriPeaks has one destination (the waste) and no ambiguity between
+      // cards, so a tap plays the card immediately rather than select-then-confirm.
+      if (data.variant === 'tripeaks') {
+        applyGesture(pileId, index, 'waste');
+        return;
+      }
       if (selected) {
         if (selected.pileId === pileId && selected.index === index) {
           const auto = autoMove(data.variant, current, model, pileId, index);
@@ -591,6 +597,8 @@ function hintHighlight(state: AnyState, move: MoveDto): HintHighlight {
         destId: posB === PYRAMID_WASTE ? 'waste' : `pyramid-${posB}`,
       };
     }
+    case 'PlayToWaste':
+      return { sourceId: `tripeaks-${move.source ?? 0}`, destId: 'waste' };
     default:
       return { sourceId: 'stock' };
   }

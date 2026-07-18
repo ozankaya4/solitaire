@@ -13,17 +13,18 @@ import type { FreeCellState } from '../engine/freecell';
 import type { KlondikeState } from '../engine/klondike';
 import { PYRAMID_ROW_COUNT, type PyramidState } from '../engine/pyramid';
 import type { SpiderState } from '../engine/spider';
+import type { TriPeaksState } from '../engine/tripeaks';
 import type { AnyState } from './engineAdapter';
 import type { VariantId } from '../app/types';
 
-export type PileKind = 'stock' | 'waste' | 'foundation' | 'tableau' | 'freecell' | 'pyramid';
+export type PileKind = 'stock' | 'waste' | 'foundation' | 'tableau' | 'freecell' | 'pyramid' | 'tripeaks';
 
 export interface RenderCard {
   /** Stable identity for move animations (unique for Klondike; occurrence-tagged for Spider). */
   readonly key: string;
   readonly card: Card;
   readonly faceUp: boolean;
-  /** Pyramid only: true once both cards it rests on are gone (or it's base-row). */
+  /** Pyramid/TriPeaks only: true once both cards it rests on are gone (or it's base-row). */
   readonly exposed?: boolean;
 }
 
@@ -44,6 +45,8 @@ export interface BoardModel {
   readonly freeCells?: readonly Pile[];
   /** Pyramid: the 28 triangle slots, flat row-major (each 0 or 1 cards). */
   readonly pyramid?: readonly Pile[];
+  /** TriPeaks: the 28 tableau slots (three peaks + shared base row). */
+  readonly tripeaks?: readonly Pile[];
   /** Spider: completed K→A sequences (0..8). */
   readonly completed?: number;
   /** Klondike: cards flipped per draw (drives the waste fan). */
@@ -55,7 +58,11 @@ export type FoundationSlots = readonly (number | null)[];
 export const UNASSIGNED_SLOTS: FoundationSlots = [null, null, null, null];
 
 export function pileId(kind: PileKind, index = 0): string {
-  return kind === 'tableau' || kind === 'foundation' || kind === 'freecell' || kind === 'pyramid'
+  return kind === 'tableau' ||
+    kind === 'foundation' ||
+    kind === 'freecell' ||
+    kind === 'pyramid' ||
+    kind === 'tripeaks'
     ? `${kind}-${index}`
     : kind;
 }
@@ -72,6 +79,8 @@ export function boardModel(
       return freecellModel(state as FreeCellState, foundationSlots);
     case 'pyramid':
       return pyramidModel(state as PyramidState);
+    case 'tripeaks':
+      return tripeaksModel(state as TriPeaksState);
     default:
       return klondikeModel(state as KlondikeState, foundationSlots);
   }
@@ -265,5 +274,62 @@ function pyramidModel(state: PyramidState): BoardModel {
     foundations: [],
     tableau: [],
     pyramid,
+  };
+}
+
+// Mirrors TriPeaks.cs's/tripeaks.ts's children table: a slot is exposed once
+// both cards it rests on in the row below are gone, or it's in the shared
+// base row (no children).
+const TRIPEAKS_CHILDREN: readonly (readonly [number, number] | undefined)[] = [
+  [3, 4], [5, 6], [7, 8],
+  [9, 10], [10, 11], [12, 13], [13, 14], [15, 16], [16, 17],
+  [18, 19], [19, 20], [20, 21], [21, 22], [22, 23], [23, 24], [24, 25], [25, 26], [26, 27],
+  undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+];
+
+function isTriPeaksSlotExposed(tableau: readonly (Card | undefined)[], index: number): boolean {
+  if (tableau[index] === undefined) {
+    return false;
+  }
+  const children = TRIPEAKS_CHILDREN[index];
+  if (children === undefined) {
+    return true;
+  }
+  const [a, b] = children;
+  return tableau[a] === undefined && tableau[b] === undefined;
+}
+
+function tripeaksModel(state: TriPeaksState): BoardModel {
+  const cardKey = (card: Card): string => `t${ordinalIndex(card)}`;
+
+  const tripeaks: Pile[] = state.tableau.map((card, index) => ({
+    id: pileId('tripeaks', index),
+    kind: 'tripeaks',
+    index,
+    cards: card
+      ? [{ key: cardKey(card), card, faceUp: true, exposed: isTriPeaksSlotExposed(state.tableau, index) }]
+      : [],
+  }));
+
+  const stock: Pile = {
+    id: 'stock',
+    kind: 'stock',
+    index: 0,
+    cards: state.stock.map((card) => ({ key: cardKey(card), card, faceUp: false })),
+  };
+  const waste: Pile = {
+    id: 'waste',
+    kind: 'waste',
+    index: 0,
+    cards: state.waste.map((card) => ({ key: cardKey(card), card, faceUp: true })),
+  };
+
+  return {
+    variant: 'tripeaks',
+    stock,
+    waste,
+    foundations: [],
+    tableau: [],
+    tripeaks,
   };
 }

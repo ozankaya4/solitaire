@@ -11,7 +11,7 @@ namespace Solitaire.Api.Leaderboard;
 ///   <item>Klondike ships a curated, solver-graded ladder (embedded JSON); only
 ///   those levels are rankable — deals beyond the ladder are solver-generated on
 ///   the client and cannot be reproduced here cheaply, so they are unrankable.</item>
-///   <item>Spider, FreeCell and Pyramid are endless: level N always uses
+///   <item>Spider, FreeCell, Pyramid and TriPeaks are endless: level N always uses
 ///   <c>deriveSeed(variant, N, 0)</c>, a pure function ported from the frontend,
 ///   so every level is rankable.</item>
 /// </list>
@@ -49,6 +49,7 @@ public sealed class LevelRegistry
             "spider" => DeriveSeed("spider", level, 0),
             "freecell" => DeriveSeed("freecell", level, 0),
             "pyramid" => DeriveSeed("pyramid", level, 0),
+            "tripeaks" => DeriveSeed("tripeaks", level, 0),
             _ => null,
         };
     }

@@ -73,4 +73,15 @@ export {
   type PyramidState,
 } from './pyramid';
 
+export {
+  tripeaksEngine,
+  tripeaksGetLegalMoves,
+  tripeaksIsWon,
+  tripeaksNewGame,
+  tripeaksReplay,
+  tripeaksTryApplyMove,
+  TRIPEAKS_TABLEAU_SIZE,
+  type TriPeaksState,
+} from './tripeaks';
+
 export { solitaireEngines } from './engines';

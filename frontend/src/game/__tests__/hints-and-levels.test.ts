@@ -151,7 +151,7 @@ describe('level providers', () => {
   });
 
   it('throws for an unregistered variant', () => {
-    expect(() => getLevelProvider('tripeaks')).toThrow();
+    expect(() => getLevelProvider('canfield')).toThrow();
   });
 });
 

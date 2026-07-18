@@ -13,6 +13,7 @@ import { findPile } from '../../board/moves';
 import type { BoardModel, Pile } from '../../board/boardModel';
 import type { Game } from '../../board/useGame';
 import { PYRAMID_ROW_COUNT } from '../../engine/pyramid';
+import { TRIPEAKS_TABLEAU_SIZE } from '../../engine/tripeaks';
 
 interface Zone {
   readonly id: string;
@@ -200,9 +201,112 @@ function buildPyramidLayout(model: BoardModel, width: number): Layout {
   return { cardW, cardH, stageW, stageH, zones, specs };
 }
 
+// TriPeaks: three independent 3-row mini-pyramids (apex, 2, 3 cards) sharing a
+// 10-card base row — peak p's base range is columns [3p, 3p+3], so adjacent
+// peaks share one boundary column. Each card's column is the midpoint of the
+// two cards (in the row below) it rests on, same idea as Pyramid but computed
+// per-peak rather than across one continuous triangle. Apex sits in front
+// (highest z); the shared base row is drawn last/behind.
+function triPeaksPosition(index: number): { row: number; col: number } {
+  if (index < 3) {
+    return { row: 0, col: 3 * index + 1.5 };
+  }
+  if (index < 9) {
+    const local = index - 3;
+    const peak = Math.floor(local / 2);
+    const j = local % 2;
+    return { row: 1, col: 3 * peak + j + 1 };
+  }
+  if (index < 18) {
+    const local = index - 9;
+    const peak = Math.floor(local / 3);
+    const k = local % 3;
+    return { row: 2, col: 3 * peak + k + 0.5 };
+  }
+  return { row: 3, col: index - 18 };
+}
+
+function buildTriPeaksLayout(model: BoardModel, width: number): Layout {
+  const rows = 4;
+  const cols = 10; // the shared base row is the widest, at 10 cards
+  const gap = Math.max(4, Math.round(width * 0.012));
+  const rawW = Math.floor((width - gap * (cols - 1)) / cols);
+  const cardW = Math.max(36, Math.min(52, rawW));
+  const cardH = Math.round(cardW * 1.42);
+  const colStep = cardW + gap;
+  const rowStep = Math.round(cardH * 0.72); // vertical overlap between rows
+  const rowGap = Math.round(cardH * 0.4);
+  const stageW = Math.max(width, cols * colStep - gap);
+
+  const specs: NodeSpec[] = [];
+  const zones: Zone[] = [];
+  const stockPos = { x: 4 * colStep, y: rows * rowStep + rowGap };
+  const wastePos = { x: 5 * colStep, y: stockPos.y };
+
+  for (let flat = 0; flat < TRIPEAKS_TABLEAU_SIZE; flat++) {
+    const pile = model.tripeaks![flat]!;
+    const { row, col } = triPeaksPosition(flat);
+    const pos = { x: col * colStep, y: row * rowStep };
+    const rc = pile.cards[0];
+    if (rc) {
+      const exposed = rc.exposed === true;
+      specs.push({
+        key: rc.key,
+        card: rc.card,
+        faceUp: rc.faceUp,
+        x: pos.x,
+        y: pos.y,
+        z: rows - row, // apex drawn in front of the rows it rests on
+        pileId: pile.id,
+        index: 0,
+        draggable: exposed,
+        stockTap: false,
+        dealOrder: flat,
+        dealFrom: stockPos,
+        animateMoves: true,
+        locked: !exposed,
+      });
+    }
+    zones.push({
+      id: pile.id,
+      ...pos,
+      w: cardW,
+      h: cardH,
+      // Always draw the outline: it sits behind the card and is revealed as
+      // the tableau clears, rather than popping in.
+      slot: true,
+      slotH: cardH,
+    });
+  }
+
+  if (model.stock) {
+    specs.push(
+      ...stackedPileSpecs(model.stock, stockPos, { topDraggable: false, stock: true, animateMoves: true }),
+    );
+    zones.push({ id: 'stock', ...stockPos, w: cardW, h: cardH, slot: true, slotH: cardH });
+  }
+  if (model.waste) {
+    specs.push(...stackedPileSpecs(model.waste, wastePos, { topDraggable: false, animateMoves: true }));
+    zones.push({
+      id: 'waste',
+      ...wastePos,
+      w: cardW,
+      h: cardH,
+      slot: model.waste.cards.length === 0,
+      slotH: cardH,
+    });
+  }
+
+  const stageH = stockPos.y + cardH + Math.round(cardH * 0.5);
+  return { cardW, cardH, stageW, stageH, zones, specs };
+}
+
 function buildLayout(model: BoardModel, width: number): Layout {
   if (model.variant === 'pyramid') {
     return buildPyramidLayout(model, width);
+  }
+  if (model.variant === 'tripeaks') {
+    return buildTriPeaksLayout(model, width);
   }
   const spider = model.variant === 'spider';
   const freecell = model.variant === 'freecell';

@@ -90,6 +90,7 @@ describe('common interface', () => {
     expect(solitaireEngines.for('SPIDER').variant).toBe('spider');
     expect(solitaireEngines.for('FREECELL').variant).toBe('freecell');
     expect(solitaireEngines.for('PYRAMID').variant).toBe('pyramid');
-    expect(() => solitaireEngines.for('tripeaks')).toThrow();
+    expect(solitaireEngines.for('TRIPEAKS').variant).toBe('tripeaks');
+    expect(() => solitaireEngines.for('canfield')).toThrow();
   });
 });

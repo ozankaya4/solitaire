@@ -11,6 +11,7 @@ public class SolitaireEnginesTests
         Assert.Contains("spider", SolitaireEngines.Variants);
         Assert.Contains("freecell", SolitaireEngines.Variants);
         Assert.Contains("pyramid", SolitaireEngines.Variants);
+        Assert.Contains("tripeaks", SolitaireEngines.Variants);
     }
 
     [Theory]
@@ -18,6 +19,7 @@ public class SolitaireEnginesTests
     [InlineData("spider")]
     [InlineData("freecell")]
     [InlineData("pyramid")]
+    [InlineData("tripeaks")]
     [InlineData("KLONDIKE")] // case-insensitive
     public void For_ResolvesKnownVariants(string variant)
     {
@@ -27,7 +29,7 @@ public class SolitaireEnginesTests
 
     [Fact]
     public void For_UnknownVariant_Throws() =>
-        Assert.Throws<ArgumentException>(() => SolitaireEngines.For("tripeaks"));
+        Assert.Throws<ArgumentException>(() => SolitaireEngines.For("canfield"));
 
     [Fact]
     public void UniformReplay_VerifiesAKlondikeGame()
@@ -107,6 +109,28 @@ public class SolitaireEnginesTests
         // Recycling with a full stock (nothing drawn yet) is illegal at move index 0.
         var moves = new List<MoveDto> { new("Recycle") };
         var outcome = SolitaireEngines.For("pyramid").Replay(new GameDefinition(1, new Dictionary<string, int>(), moves));
+
+        Assert.False(outcome.AllMovesLegal);
+        Assert.Equal(0, outcome.FirstIllegalMoveIndex);
+    }
+
+    [Fact]
+    public void UniformReplay_VerifiesATriPeaksGame()
+    {
+        // Drawing a card is legal against any fresh TriPeaks deal.
+        var moves = new List<MoveDto> { new("Draw") };
+        var outcome = SolitaireEngines.For("tripeaks").Replay(new GameDefinition(1, new Dictionary<string, int>(), moves));
+
+        Assert.True(outcome.AllMovesLegal);
+        Assert.False(outcome.Won);
+    }
+
+    [Fact]
+    public void UniformReplay_DetectsAnIllegalTriPeaksMove()
+    {
+        // Recycling with a full stock (nothing drawn yet) is illegal at move index 0.
+        var moves = new List<MoveDto> { new("Recycle") };
+        var outcome = SolitaireEngines.For("tripeaks").Replay(new GameDefinition(1, new Dictionary<string, int>(), moves));
 
         Assert.False(outcome.AllMovesLegal);
         Assert.Equal(0, outcome.FirstIllegalMoveIndex);

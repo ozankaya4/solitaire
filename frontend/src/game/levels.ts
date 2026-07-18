@@ -190,7 +190,7 @@ providers.set('spider', createSpiderEndlessProvider(2));
 // running-level-counter hint budget rather than a curated, solver-graded ladder.
 providers.set('freecell', new EndlessLevelProvider('freecell', () => ({}), levelCounterHintBudget));
 providers.set('pyramid', new EndlessLevelProvider('pyramid', () => ({}), levelCounterHintBudget));
-// Future endless variants (tripeaks) register the same way.
+providers.set('tripeaks', new EndlessLevelProvider('tripeaks', () => ({}), levelCounterHintBudget));
 
 export function registerLevelProvider(provider: LevelProvider): void {
   providers.set(provider.variant, provider);
