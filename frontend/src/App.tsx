@@ -51,7 +51,7 @@ export default function App() {
         >
           {screen === 'menu' && (
             <MainMenu
-              onPlay={() => openGame(undefined)}
+              onPlay={openGame}
               onOpenSettings={() => setScreen('settings')}
               onOpenSaved={() => setScreen('saved')}
               onOpenLeaderboard={() => setOverlay('leaderboard')}

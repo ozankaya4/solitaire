@@ -28,6 +28,8 @@ export interface NodeSpec {
   readonly dealFrom: { readonly x: number; readonly y: number } | null;
   /** False disables move tweens (Spider's occurrence keys aren't stable enough). */
   readonly animateMoves: boolean;
+  /** Pyramid: dims a card that's still covered (not yet playable). */
+  readonly locked?: boolean;
 }
 
 export type Registry = Map<string, { x: MotionValue<number>; y: MotionValue<number> }>;
@@ -122,6 +124,9 @@ export function CardNode({
   }
   if (hinted) {
     classes.push('is-hint');
+  }
+  if (spec.locked) {
+    classes.push('is-locked');
   }
 
   return (

@@ -12,6 +12,7 @@ import { RefreshIcon } from '../../icons/icons';
 import { findPile } from '../../board/moves';
 import type { BoardModel, Pile } from '../../board/boardModel';
 import type { Game } from '../../board/useGame';
+import { PYRAMID_ROW_COUNT } from '../../engine/pyramid';
 
 interface Zone {
   readonly id: string;
@@ -114,7 +115,95 @@ function tableauSpecs(
   return { specs, bottom: lastY };
 }
 
+// Pyramid's geometry is a triangle, not columns: row r (0=apex..6=base) holds
+// r+1 cards, each row overlapping the one below so a card visually rests on
+// the two "children" it depends on. The apex sits in front (highest z); the
+// base row is drawn last/behind, matching the exposure rule (both children
+// gone → exposed). Stock + waste sit centered below the triangle.
+function buildPyramidLayout(model: BoardModel, width: number): Layout {
+  const rows = PYRAMID_ROW_COUNT;
+  const cols = rows; // the base row is the widest, at `rows` cards
+  const gap = Math.max(4, Math.round(width * 0.012));
+  const rawW = Math.floor((width - gap * (cols - 1)) / cols);
+  const cardW = Math.min(64, rawW);
+  const cardH = Math.round(cardW * 1.42);
+  const colStep = cardW + gap;
+  const rowStep = Math.round(cardH * 0.72); // vertical overlap between rows
+  const rowGap = Math.round(cardH * 0.4);
+  const offsetX = (row: number): number => ((rows - 1 - row) * colStep) / 2;
+  const stageW = Math.max(width, cols * colStep - gap);
+
+  const specs: NodeSpec[] = [];
+  const zones: Zone[] = [];
+  const stockPos = { x: offsetX(1), y: rows * rowStep + rowGap };
+  const wastePos = { x: offsetX(1) + colStep, y: stockPos.y };
+
+  let flat = 0;
+  for (let row = 0; row < rows; row++) {
+    const y = row * rowStep;
+    for (let col = 0; col <= row; col++) {
+      const pile = model.pyramid![flat]!;
+      const pos = { x: offsetX(row) + col * colStep, y };
+      const rc = pile.cards[0];
+      if (rc) {
+        const exposed = rc.exposed === true;
+        specs.push({
+          key: rc.key,
+          card: rc.card,
+          faceUp: rc.faceUp,
+          x: pos.x,
+          y: pos.y,
+          z: rows - row, // apex drawn in front of the rows it rests on
+          pileId: pile.id,
+          index: 0,
+          draggable: exposed,
+          stockTap: false,
+          dealOrder: flat,
+          dealFrom: stockPos,
+          animateMoves: true,
+          locked: !exposed,
+        });
+      }
+      zones.push({
+        id: pile.id,
+        ...pos,
+        w: cardW,
+        h: cardH,
+        // Always draw the outline: it sits behind the card and is revealed as
+        // the triangle clears, rather than popping in.
+        slot: true,
+        slotH: cardH,
+      });
+      flat++;
+    }
+  }
+
+  if (model.stock) {
+    specs.push(
+      ...stackedPileSpecs(model.stock, stockPos, { topDraggable: false, stock: true, animateMoves: true }),
+    );
+    zones.push({ id: 'stock', ...stockPos, w: cardW, h: cardH, slot: true, slotH: cardH });
+  }
+  if (model.waste) {
+    specs.push(...stackedPileSpecs(model.waste, wastePos, { topDraggable: true, animateMoves: true }));
+    zones.push({
+      id: 'waste',
+      ...wastePos,
+      w: cardW,
+      h: cardH,
+      slot: model.waste.cards.length === 0,
+      slotH: cardH,
+    });
+  }
+
+  const stageH = stockPos.y + cardH + Math.round(cardH * 0.5);
+  return { cardW, cardH, stageW, stageH, zones, specs };
+}
+
 function buildLayout(model: BoardModel, width: number): Layout {
+  if (model.variant === 'pyramid') {
+    return buildPyramidLayout(model, width);
+  }
   const spider = model.variant === 'spider';
   const freecell = model.variant === 'freecell';
   const cols = spider ? 10 : freecell ? 8 : 7;

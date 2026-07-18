@@ -17,6 +17,13 @@ import {
   type KlondikeState,
 } from '../engine/klondike';
 import {
+  pyramidGetLegalMoves,
+  pyramidIsWon,
+  pyramidNewGame,
+  pyramidTryApplyMove,
+  type PyramidState,
+} from '../engine/pyramid';
+import {
   spiderGetLegalMoves,
   spiderIsWon,
   spiderNewGame,
@@ -27,9 +34,9 @@ import {
 import type { MoveDto } from '../engine/types';
 import type { VariantId } from '../app/types';
 
-export type AnyState = KlondikeState | SpiderState | FreeCellState;
+export type AnyState = KlondikeState | SpiderState | FreeCellState | PyramidState;
 
-const PLAYABLE_VARIANTS: readonly VariantId[] = ['klondike', 'spider', 'freecell'];
+const PLAYABLE_VARIANTS: readonly VariantId[] = ['klondike', 'spider', 'freecell', 'pyramid'];
 
 /** Variants that currently have a playable TypeScript engine + board. */
 export function isPlayable(variant: VariantId): boolean {
@@ -46,6 +53,8 @@ export function createGame(
       return spiderNewGame(seed, spiderOptionsFromBag(bag));
     case 'freecell':
       return freecellNewGame(seed);
+    case 'pyramid':
+      return pyramidNewGame(seed);
     default:
       return klondikeNewGame(seed, klondikeOptionsFromBag(bag));
   }
@@ -57,6 +66,8 @@ export function legalMoves(variant: VariantId, state: AnyState): MoveDto[] {
       return spiderGetLegalMoves(state as SpiderState);
     case 'freecell':
       return freecellGetLegalMoves(state as FreeCellState);
+    case 'pyramid':
+      return pyramidGetLegalMoves(state as PyramidState);
     default:
       return klondikeGetLegalMoves(state as KlondikeState);
   }
@@ -74,6 +85,8 @@ export function applyMove(variant: VariantId, state: AnyState, move: MoveDto): A
       return spiderTryApplyMove(state as SpiderState, move);
     case 'freecell':
       return freecellTryApplyMove(state as FreeCellState, move);
+    case 'pyramid':
+      return pyramidTryApplyMove(state as PyramidState, move);
     default:
       return klondikeTryApplyMove(state as KlondikeState, move);
   }
@@ -85,6 +98,8 @@ export function isWon(variant: VariantId, state: AnyState): boolean {
       return spiderIsWon(state as SpiderState);
     case 'freecell':
       return freecellIsWon(state as FreeCellState);
+    case 'pyramid':
+      return pyramidIsWon(state as PyramidState);
     default:
       return klondikeIsWon(state as KlondikeState);
   }

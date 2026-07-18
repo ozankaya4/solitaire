@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../app/settings';
 import { useAuth } from '../auth/AuthContext';
@@ -15,7 +16,7 @@ import { Select, type SelectOption } from './Select';
 import { variantIcon } from './variantIcon';
 
 interface MainMenuProps {
-  onPlay: () => void;
+  onPlay: (variant: VariantId) => void;
   onOpenSettings: () => void;
   onOpenSaved: () => void;
   onOpenLeaderboard: () => void;
@@ -30,8 +31,12 @@ export function MainMenu({
   onOpenAuth,
 }: MainMenuProps) {
   const { t } = useTranslation();
-  const { defaultVariant, setDefaultVariant, drawMode } = useSettings();
+  const { defaultVariant, drawMode } = useSettings();
   const { user, logout } = useAuth();
+  // The picker here is a one-off "what to play right now" choice, seeded from
+  // the persistent Settings default but never writing back to it — picking a
+  // game on this screen must not silently change the app's default variant.
+  const [selectedVariant, setSelectedVariant] = useState<VariantId>(defaultVariant);
 
   const options: SelectOption[] = VARIANTS.map((variant) => ({
     value: variant.id,
@@ -56,13 +61,17 @@ export function MainMenu({
         <p className="panel__label">{t('menu.choose')}</p>
         <Select
           label={t('menu.choose')}
-          value={defaultVariant}
+          value={selectedVariant}
           options={options}
-          onChange={(value) => setDefaultVariant(value as VariantId)}
+          onChange={(value) => setSelectedVariant(value as VariantId)}
         />
       </div>
 
-      <button type="button" className="btn btn--primary btn--block" onClick={onPlay}>
+      <button
+        type="button"
+        className="btn btn--primary btn--block"
+        onClick={() => onPlay(selectedVariant)}
+      >
         <PlayIcon size={18} />
         {t('menu.play')}
       </button>
@@ -102,7 +111,7 @@ export function MainMenu({
 
       <p className="footnote">
         <StarIcon size={12} />{' '}
-        {t('menu.drawNote', { count: drawMode, variant: t(`variant.${defaultVariant}`) })}
+        {t('menu.drawNote', { count: drawMode, variant: t(`variant.${selectedVariant}`) })}
       </p>
     </section>
   );

@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Card } from '../engine/cards';
 import { KLONDIKE_UNLIMITED_REDEALS } from '../engine/klondike';
+import { PYRAMID_WASTE } from '../engine/pyramid';
 import type { MoveDto } from '../engine/types';
 import type { Grade } from '../game/grading';
 import { getHint } from '../game/hints';
@@ -323,6 +324,9 @@ export function useGame(initialVariant?: VariantId): Game {
       if (pile.kind === 'waste' || pile.kind === 'foundation') {
         return index === pile.cards.length - 1; // only the top card
       }
+      if (pile.kind === 'pyramid') {
+        return card.exposed === true;
+      }
       return pile.kind === 'tableau';
     },
     [model],
@@ -573,6 +577,18 @@ function hintHighlight(state: AnyState, move: MoveDto): HintHighlight {
       return {
         sourceId: `freecell-${move.source ?? 0}`,
         destId: `foundation-${cell?.suit ?? 0}`,
+      };
+    }
+    case 'RemoveSingle': {
+      const pos = move.source ?? 0;
+      return { sourceId: pos === PYRAMID_WASTE ? 'waste' : `pyramid-${pos}` };
+    }
+    case 'RemovePair': {
+      const posA = move.source ?? 0;
+      const posB = move.destination ?? 0;
+      return {
+        sourceId: posA === PYRAMID_WASTE ? 'waste' : `pyramid-${posA}`,
+        destId: posB === PYRAMID_WASTE ? 'waste' : `pyramid-${posB}`,
       };
     }
     default:

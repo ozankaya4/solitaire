@@ -1,6 +1,7 @@
 // Translates board gestures (drag a run, tap-to-move, double-tap, stock click)
 // into engine MoveDtos, choosing the first candidate the engine accepts.
 
+import { PYRAMID_WASTE } from '../engine/pyramid';
 import type { MoveDto } from '../engine/types';
 import type { VariantId } from '../app/types';
 import { applyMove, type AnyState } from './engineAdapter';
@@ -29,6 +30,7 @@ export function findPile(model: BoardModel, id: string): Pile | undefined {
   return (
     model.foundations.find((p) => p.id === id) ??
     model.freeCells?.find((p) => p.id === id) ??
+    model.pyramid?.find((p) => p.id === id) ??
     model.tableau.find((p) => p.id === id)
   );
 }
@@ -122,6 +124,21 @@ export function moveBetween(
     return null;
   }
 
+  if (variant === 'pyramid') {
+    // Every pyramid/waste move here is "pair these two exposed cards" — tapping
+    // the same card twice (solo King removal) never reaches this function since
+    // srcId === destId already short-circuits above; that flows through autoMove.
+    if (
+      (src.kind !== 'pyramid' && src.kind !== 'waste') ||
+      (dest.kind !== 'pyramid' && dest.kind !== 'waste')
+    ) {
+      return null;
+    }
+    const srcPos = src.kind === 'waste' ? PYRAMID_WASTE : src.index;
+    const destPos = dest.kind === 'waste' ? PYRAMID_WASTE : dest.index;
+    return legal(variant, state, { type: 'RemovePair', source: srcPos, destination: destPos });
+  }
+
   // Klondike
   const moving = src.cards[srcIndex]?.card;
   if (!moving) {
@@ -182,6 +199,18 @@ export function autoMove(
   srcId: string,
   srcIndex: number,
 ): AutoMove | null {
+  if (variant === 'pyramid') {
+    // No destination to search: a King is removed solo, or there's nothing to do.
+    const src = findPile(model, srcId);
+    const card = src?.cards[srcIndex]?.card;
+    if (!src || !card || card.rank !== 13) {
+      return null;
+    }
+    const position = src.kind === 'waste' ? PYRAMID_WASTE : src.index;
+    const move = legal(variant, state, { type: 'RemoveSingle', source: position });
+    return move ? { move, destId: srcId } : null;
+  }
+
   let dests: string[];
   if (variant === 'spider') {
     dests = model.tableau.map((p) => p.id);

@@ -89,6 +89,7 @@ describe('common interface', () => {
     expect(solitaireEngines.for('klondike').variant).toBe('klondike');
     expect(solitaireEngines.for('SPIDER').variant).toBe('spider');
     expect(solitaireEngines.for('FREECELL').variant).toBe('freecell');
-    expect(() => solitaireEngines.for('pyramid')).toThrow();
+    expect(solitaireEngines.for('PYRAMID').variant).toBe('pyramid');
+    expect(() => solitaireEngines.for('tripeaks')).toThrow();
   });
 });

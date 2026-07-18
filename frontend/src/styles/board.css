@@ -119,6 +119,12 @@
   animation: hint-pulse 0.9s var(--ease-standard) infinite alternate;
 }
 
+/* Pyramid: a covered card is dealt face-up but isn't playable until both cards
+   it rests on are cleared — dim it so the currently-playable set reads clearly. */
+.cardnode.is-locked .card__front {
+  opacity: 0.55;
+}
+
 /* A positioned card in the flat layer. */
 .cardnode {
   position: absolute;

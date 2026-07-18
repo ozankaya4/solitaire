@@ -49,10 +49,20 @@ public class LevelRegistryTests
     }
 
     [Theory]
+    [InlineData(1, 436867833)]
+    [InlineData(2, -1235908628)]
+    [InlineData(10, -431698000)]
+    [InlineData(999, -1202567289)]
+    public void PyramidCanonicalSeed_MatchesFrontendDeriveSeed(int level, int expected)
+    {
+        Assert.Equal(expected, _registry.CanonicalSeed("pyramid", level));
+    }
+
+    [Theory]
     [InlineData("klondike", 0)]
     [InlineData("spider", -3)]
     [InlineData("freecell", -1)]
-    [InlineData("pyramid", 5)] // no server engine / provider yet
+    [InlineData("pyramid", -1)]
     [InlineData("tripeaks", 5)] // no server engine / provider yet
     public void NonPositiveOrUnknown_IsUnrankable(string variant, int level)
     {

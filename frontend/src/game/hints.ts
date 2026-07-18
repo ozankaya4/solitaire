@@ -4,6 +4,7 @@
 
 import { freecellGetLegalMoves, type FreeCellState } from '../engine/freecell';
 import { klondikeGetLegalMoves, type KlondikeState } from '../engine/klondike';
+import { pyramidGetLegalMoves, type PyramidState } from '../engine/pyramid';
 import { spiderGetLegalMoves, type SpiderState } from '../engine/spider';
 import { faceUpCount } from '../engine/tableau';
 import type { MoveDto } from '../engine/types';
@@ -23,10 +24,15 @@ export function getFreeCellHint(state: FreeCellState): MoveDto | null {
   return best(freecellGetLegalMoves(state), (m) => freecellPriority(m));
 }
 
+/** Returns one good legal Pyramid move, or null if none exist. */
+export function getPyramidHint(state: PyramidState): MoveDto | null {
+  return best(pyramidGetLegalMoves(state), (m) => pyramidPriority(m));
+}
+
 /** Variant-dispatching hint used by the game layer. */
 export function getHint(
   variant: string,
-  state: KlondikeState | SpiderState | FreeCellState,
+  state: KlondikeState | SpiderState | FreeCellState | PyramidState,
 ): MoveDto | null {
   switch (variant) {
     case 'klondike':
@@ -35,6 +41,8 @@ export function getHint(
       return getSpiderHint(state as SpiderState);
     case 'freecell':
       return getFreeCellHint(state as FreeCellState);
+    case 'pyramid':
+      return getPyramidHint(state as PyramidState);
     default:
       return null;
   }
@@ -119,6 +127,21 @@ function freecellPriority(move: MoveDto): number {
       return 20; // parking a card is a last resort, but still worth suggesting
     case 'FoundationToTableau':
       return 5;
+    default:
+      return 0;
+  }
+}
+
+function pyramidPriority(move: MoveDto): number {
+  switch (move.type) {
+    case 'RemovePair':
+      return 100;
+    case 'RemoveSingle':
+      return 90;
+    case 'Draw':
+      return 20;
+    case 'Recycle':
+      return 10;
     default:
       return 0;
   }

@@ -11,7 +11,7 @@ import type { VariantId } from '../../app/types';
 import { ArrowLeftIcon, BulbIcon, GridIcon, RefreshIcon, UndoIcon } from '../../icons/icons';
 import { variantIcon } from '../variantIcon';
 
-const PLAYABLE: readonly VariantId[] = ['klondike', 'spider', 'freecell'];
+const PLAYABLE: readonly VariantId[] = ['klondike', 'spider', 'freecell', 'pyramid'];
 
 export function GameScreen({
   onExit,

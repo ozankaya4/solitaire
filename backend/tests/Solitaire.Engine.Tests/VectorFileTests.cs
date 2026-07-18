@@ -95,4 +95,12 @@ public class VectorFileTests
         Assert.NotEmpty(file.Vectors);
         Assert.Contains(file.Vectors, v => v.Moves.Count > 0);
     }
+
+    [Fact]
+    public void PyramidVectors_AreNonEmpty()
+    {
+        var file = VectorData.BuildFile("pyramid.json");
+        Assert.NotEmpty(file.Vectors);
+        Assert.Contains(file.Vectors, v => v.Moves.Count > 0);
+    }
 }

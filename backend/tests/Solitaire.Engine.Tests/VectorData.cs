@@ -40,7 +40,8 @@ internal static class VectorData
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public static IReadOnlyList<string> FileNames { get; } = ["klondike.json", "spider.json", "freecell.json"];
+    public static IReadOnlyList<string> FileNames { get; } =
+        ["klondike.json", "spider.json", "freecell.json", "pyramid.json"];
 
     /// <summary>All canonical vector definitions for a given file/variant family.</summary>
     public static IReadOnlyList<VectorCase> BuildCases(string fileName) => fileName switch
@@ -48,6 +49,7 @@ internal static class VectorData
         "klondike.json" => BuildKlondikeCases(),
         "spider.json" => BuildSpiderCases(),
         "freecell.json" => BuildFreeCellCases(),
+        "pyramid.json" => BuildPyramidCases(),
         _ => throw new ArgumentOutOfRangeException(nameof(fileName), fileName, "Unknown vector file."),
     };
 
@@ -182,4 +184,27 @@ internal static class VectorData
             seed,
             new Dictionary<string, int>(),
             moves.Select(global::Solitaire.Engine.FreeCell.ToDto).ToList());
+
+    // ---- Pyramid --------------------------------------------------------------
+
+    private static IReadOnlyList<VectorCase> BuildPyramidCases()
+    {
+        // Same reasoning as FreeCell/Spider: a greedy (non-backtracking) line is
+        // enough for cross-language parity; win detection itself is covered by
+        // cheap direct unit tests (PyramidMoveLegalityTests.IsWon_*).
+        return
+        [
+            PyramidCase("pyramid-seed1-play", 1, PyramidSolver.GreedyPlaythrough(1, 200)),
+            PyramidCase("pyramid-seed2-play", 2, PyramidSolver.GreedyPlaythrough(2, 200)),
+            PyramidCase("pyramid-seed3-short", 3, PyramidSolver.GreedyPlaythrough(3, 8)),
+        ];
+    }
+
+    private static VectorCase PyramidCase(string name, int seed, IReadOnlyList<PyramidMove> moves) =>
+        new(
+            name,
+            "pyramid",
+            seed,
+            new Dictionary<string, int>(),
+            moves.Select(global::Solitaire.Engine.Pyramid.ToDto).ToList());
 }

@@ -151,7 +151,7 @@ describe('level providers', () => {
   });
 
   it('throws for an unregistered variant', () => {
-    expect(() => getLevelProvider('pyramid')).toThrow();
+    expect(() => getLevelProvider('tripeaks')).toThrow();
   });
 });
 

@@ -60,4 +60,17 @@ export {
   type FreeCellState,
 } from './freecell';
 
+export {
+  pyramidEngine,
+  pyramidGetLegalMoves,
+  pyramidIsWon,
+  pyramidNewGame,
+  pyramidReplay,
+  pyramidTryApplyMove,
+  PYRAMID_ROW_COUNT,
+  PYRAMID_SIZE,
+  PYRAMID_WASTE,
+  type PyramidState,
+} from './pyramid';
+
 export { solitaireEngines } from './engines';
