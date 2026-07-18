@@ -29,13 +29,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+    <!--
+      DataProtection.EntityFrameworkCore persists the key ring to the DB. Its
+      transitive DataProtection + System.Security.Cryptography.Xml at 10.0.0 carry
+      advisories (GHSA-9mv3-2cwr-p262, GHSA-37gx-xxp4-5rgx) patched in 10.0.6+, so
+      the Microsoft EF/ASP.NET packages are pinned to 10.0.10. Npgsql's provider
+      tops out at 10.0.3; EF Core unifies up to 10.0.10 (patch-compatible).
+    -->
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Override the vulnerable transitive native SQLite (GHSA-2m69-gcr7-jv3q) with a patched build. -->
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.0" />
   </ItemGroup>

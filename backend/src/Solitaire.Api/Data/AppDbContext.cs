@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,15 +8,19 @@ namespace Solitaire.Api.Data;
 /// EF Core context: Identity tables plus per-account game saves and stats.
 /// Primary keys are GUID/string (no database identity/sequence columns), which
 /// keeps the schema portable across the SQLite (dev/test) and PostgreSQL (prod)
-/// providers.
+/// providers. Also stores the ASP.NET DataProtection key ring so auth cookies
+/// survive restarts on stateless/ephemeral hosts (see <see cref="IDataProtectionKeyContext"/>).
 /// </summary>
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<ApplicationUser>(options), IDataProtectionKeyContext
 {
     public DbSet<GameSaveEntity> GameSaves => Set<GameSaveEntity>();
 
     public DbSet<PlayerStatEntity> PlayerStats => Set<PlayerStatEntity>();
 
     public DbSet<LeaderboardEntryEntity> LeaderboardEntries => Set<LeaderboardEntryEntity>();
+
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

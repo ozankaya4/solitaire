@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -63,6 +64,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite(connectionString ?? "Data Source=solitaire.db");
     }
 });
+
+// -- DataProtection keys in the DB -------------------------------------------
+// Auth cookies + anti-forgery tokens are signed/encrypted with the DataProtection
+// key ring. The default file-system store lives in the container's ephemeral
+// filesystem, so every redeploy/cold-start rotates the keys and silently logs
+// everyone out. Persisting the ring to the shared database keeps it stable across
+// restarts. A fixed application name keeps the purpose stable across hosts.
+builder.Services.AddDataProtection()
+    .SetApplicationName("Solitaire")
+    .PersistKeysToDbContext<AppDbContext>();
 
 // -- Localization: en (default) + tr, resolved per request (Accept-Language) --
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
