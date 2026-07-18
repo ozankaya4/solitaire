@@ -143,7 +143,7 @@ public class SpiderMoveLegalityTests
         var source = FaceUp(Card(Suit.Spades, 1));
         var state = State(tableau: [source, dest]);
 
-        Assert.True(SpideryApplyMove(state, SpiderMove.TableauToTableau(0, 1, 1), out var next, out int delta));
+        Assert.True(Spider.TryApplyMove(state, SpiderMove.TableauToTableau(0, 1, 1), out var next, out int delta));
         Assert.Equal(SpiderScoring.MovePenalty + SpiderScoring.CompletedSequenceBonus, delta); // -1 + 100
         Assert.Equal(1, next.CompletedSequences);
         Assert.True(next.Tableau[1].IsEmpty); // the finished sequence left the pile
