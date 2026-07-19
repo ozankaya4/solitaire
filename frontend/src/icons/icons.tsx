@@ -308,6 +308,22 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
+export function HelpIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path
+        d="M9.2 9.2A2.9 2.9 0 0 1 12 7a2.8 2.8 0 0 1 2.9 2.8c0 1.9-2.9 2.2-2.9 4.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M12 17.4h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+    </Svg>
+  );
+}
+
 export function UserIcon(props: IconProps) {
   return (
     <Svg {...props}>

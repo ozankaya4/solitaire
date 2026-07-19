@@ -30,6 +30,19 @@
   margin-left: var(--space-2xs);
 }
 
+/* Groups the game name with its "how to play" button on the bar's left side
+   (the group, not the meta block, then owns the left/right separation). */
+.gamebar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-right: auto;
+}
+
+.gamebar__left .gamebar__meta {
+  margin-right: 0;
+}
+
 .gamebar__variant {
   font-size: var(--text-sm);
   font-weight: 700;

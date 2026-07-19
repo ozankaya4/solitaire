@@ -8,7 +8,8 @@ import { useAuth } from '../../auth/AuthContext';
 import { AuthModal } from '../AuthModal';
 import { LeaderboardModal } from '../LeaderboardModal';
 import type { VariantId } from '../../app/types';
-import { ArrowLeftIcon, BulbIcon, GridIcon, RefreshIcon, UndoIcon } from '../../icons/icons';
+import { ArrowLeftIcon, BulbIcon, GridIcon, HelpIcon, RefreshIcon, UndoIcon } from '../../icons/icons';
+import { HowToPlayModal } from '../HowToPlayModal';
 import { variantIcon } from '../variantIcon';
 
 const PLAYABLE: readonly VariantId[] = ['klondike', 'spider', 'freecell', 'pyramid', 'tripeaks'];
@@ -24,6 +25,7 @@ export function GameScreen({
   const { user } = useAuth();
   const game = useGame(initialVariant);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showHowTo, setShowHowTo] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [rank, setRank] = useState<number | null>(null);
@@ -110,11 +112,21 @@ export function GameScreen({
         <button type="button" className="iconbtn" onClick={onExit} aria-label={t('a11y.back')}>
           <ArrowLeftIcon size={20} />
         </button>
-        <div className="gamebar__meta">
-          <span className="gamebar__variant">{t(`variant.${game.variant}`)}</span>
-          <span className="gamebar__sub">
-            {t('game.level', { n: game.level })} · {t(`difficulty.${game.grade}`)} · {game.score}
-          </span>
+        <div className="gamebar__left">
+          <div className="gamebar__meta">
+            <span className="gamebar__variant">{t(`variant.${game.variant}`)}</span>
+            <span className="gamebar__sub">
+              {t('game.level', { n: game.level })} · {t(`difficulty.${game.grade}`)} · {game.score}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="iconbtn"
+            onClick={() => setShowHowTo(true)}
+            aria-label={t('howto.button')}
+          >
+            <HelpIcon size={18} />
+          </button>
         </div>
 
         <button
@@ -168,6 +180,7 @@ export function GameScreen({
         />
       ) : null}
 
+      {showHowTo ? <HowToPlayModal variant={game.variant} onClose={() => setShowHowTo(false)} /> : null}
       {showLeaderboard ? <LeaderboardModal onClose={() => setShowLeaderboard(false)} /> : null}
       {showAuth ? <AuthModal onClose={() => setShowAuth(false)} /> : null}
 

@@ -102,6 +102,69 @@
     "notBuiltBody": "Bu tür yakında geliyor. Şimdilik Klondike oyna.",
     "playKlondike": "Klondike oyna"
   },
+  "howto": {
+    "button": "Nasıl oynanır",
+    "title": "{{variant}} nasıl oynanır",
+    "goalLabel": "Amaç",
+    "klondike": {
+      "goal": "52 kartın tamamını dört temel desteye taşı; her rengi Astan Papaza doğru sırala.",
+      "steps": [
+        "Desteye (sol üstte) dokunarak kartları açık kâğıt yığınına çevir. Yığının en üstteki kartı her zaman oynanabilir. Deste bittiğinde tekrar dokunarak yığını sınırsız kez geri çevirebilirsin.",
+        "Yedi sütunu aşağı doğru, renkleri dönüşümlü olarak diz: kırmızı bir kart, bir üst değerdeki siyah kartın üzerine gelir (örneğin siyah 7'nin üzerine kırmızı 6).",
+        "Bir Ası üstteki boş temel yuvalardan herhangi birine taşı; sonra o desteyi kendi renginde yukarı doğru kur: As, 2, 3 … Papaz.",
+        "Kapalı kartlar, üzerlerindeki tüm kartlar kaldırılınca açılır. Oyunun özü kapalı kartları ortaya çıkarmaktır.",
+        "Boşalan bir sütuna yalnızca Papaz (tek başına ya da üzerine dizilmiş sırayla birlikte) konabilir.",
+        "Kartları sürükleyerek ya da önce karta sonra gideceği yere dokunarak taşı. Bir karta çift dokunmak onu doğrudan temel desteye gönderir.",
+        "Dört temel deste de Astan Papaza tamamlandığında kazanırsın."
+      ]
+    },
+    "spider": {
+      "goal": "Aynı renkten Papazdan Asa sekiz tam seri kur — tamamlanan her seri masadan kalkar.",
+      "steps": [
+        "On sütun dağıtılır, yalnızca en üst kartlar açıktır. Herhangi bir kart, renginden bağımsız olarak bir üst değerdeki kartın üzerine konabilir.",
+        "Yalnızca aynı renkten azalan bir dizi topluca taşınabilir — karışık renkli yığınlar parça parça taşınır.",
+        "Tek renkten seriler toplamaya çalış. Papazdan Asa tamamlanan tek renkli seri masadan kendiliğinden kalkar.",
+        "Desteye (sağ üstte) dokununca her sütuna birer yeni kart dağıtılır. Boş sütun varken dağıtım yapılamaz.",
+        "Boş sütunlar her kartı kabul eder ve en değerli aracındır — karışık yığınları ayırıp yeniden dizmek için kullan.",
+        "Kapalı kartlar, üzerlerindeki kartlar kaldırılınca açılır.",
+        "Sekiz seri de tamamlanıp masa boşaldığında kazanırsın."
+      ]
+    },
+    "freecell": {
+      "goal": "52 kartın tamamını dört temel desteye taşı; her rengi Astan Papaza doğru sırala.",
+      "steps": [
+        "Tüm kartlar sekiz sütuna açık dağıtılır — hiçbir şey gizli değildir, oyunun tamamı ilk hamleden planlanabilir.",
+        "Sütunları Klondike'taki gibi aşağı doğru ve renkleri dönüşümlü olarak diz.",
+        "Sol üstteki dört boş hücrenin her biri istediğin tek bir kartı tutar. Alttaki kartlara ulaşmak için kartları buraya park et.",
+        "Ortaya çıkan Asları temel destelere taşı, sonra her rengi yukarı doğru kur: As, 2, 3 … Papaz.",
+        "Boş bir sütuna herhangi bir kart ya da sıra konabilir.",
+        "Birden çok kartı tek seferde taşımak için yer gerekir: bir kart, artı her boş hücre için bir kart daha — her boş sütun bu sayıyı ikiye katlar.",
+        "Neredeyse her FreeCell eli kazanılabilir. Tıkandıysan geri al ve farklı bir sıra dene — dört temel deste tamamlanınca kazanırsın."
+      ]
+    },
+    "pyramid": {
+      "goal": "Toplamı 13 eden çiftleri kaldırarak piramitteki 28 kartın tamamını temizle.",
+      "steps": [
+        "Yalnızca üzeri tamamen açık kartlar oynanabilir — bir kart, alt sıradan onu örten iki kart kalkınca açılır. Soluk görünen kartlar hâlâ kilitlidir; en alt sıra açık başlar.",
+        "Değerleri toplamı 13 eden iki açık karta dokunarak onları kaldır. As 1, Vale 11, Kız 12 sayılır: yani As + Kız, 2 + Vale, 3 + 10, 4 + 9, 5 + 8 ve 6 + 7 eşleşir.",
+        "Papaz tek başına 13 sayılır — bir Papaza iki kez dokunarak onu tek başına kaldır.",
+        "Piramidin altındaki desteye dokunarak açık yığına kart çevir. Yığının üst kartı, piramitteki herhangi bir açık kartla eşleşebilir.",
+        "Deste bittiğinde tekrar dokunarak yığını geri çevir — istediğin kadar tekrarlayabilirsin.",
+        "Piramit boşaldığı anda kazanırsın; destede ya da yığında kart kalması önemli değildir."
+      ]
+    },
+    "tripeaks": {
+      "goal": "Açık yığındaki karttan bir üst ya da bir alt değerdeki kartları oynayarak üç tepeyi de temizle.",
+      "steps": [
+        "Yalnızca üzeri tamamen açık kartlar oynanabilir — bir kart, onu alttan örten iki kart kalkınca açılır. Soluk görünen kartlar hâlâ kilitlidir; en alt sıra açık başlar.",
+        "Açık yığının üst kartından tam bir üst ya da bir alt değerdeki herhangi bir açık karta dokun — kart yığına taşınır ve eşleşilecek yeni kart olur.",
+        "Papaz ile As birbirine bağlanır: As Papazın üzerine, Papaz da Asın üzerine oynanabilir.",
+        "Zincirleri kovala: oynadığın her kart yenilerini açar; kart çekmeden uzun zincirler kurmak tepeleri en hızlı böyle indirir.",
+        "Tıkandın mı? Desteye dokunarak yığına yeni bir kart çevir. Deste bittiğinde tekrar dokunarak sınırsız kez geri çevir.",
+        "Üç tepe de temizlendiği anda kazanırsın; destede kart kalması önemli değildir."
+      ]
+    }
+  },
   "difficulty": {
     "easy": "Kolay",
     "medium": "Orta",

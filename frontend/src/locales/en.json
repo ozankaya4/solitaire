@@ -102,6 +102,69 @@
     "notBuiltBody": "This variant is coming soon. Play Klondike for now.",
     "playKlondike": "Play Klondike"
   },
+  "howto": {
+    "button": "How to play",
+    "title": "How to play {{variant}}",
+    "goalLabel": "Goal",
+    "klondike": {
+      "goal": "Move all 52 cards onto the four foundations, building each suit up from Ace to King.",
+      "steps": [
+        "Tap the stock (top left) to turn cards onto the waste pile. The top waste card is always playable. When the stock runs out, tap it again to recycle the waste — as many times as you like.",
+        "Build the seven tableau columns downward in alternating colors: a red card goes on a black card one rank higher, and vice versa (for example, a red 6 on a black 7).",
+        "Move an Ace to any empty foundation slot at the top, then build that foundation upward in its suit: Ace, 2, 3 … King.",
+        "Face-down cards flip over once every card on top of them is moved away. Uncovering them is the heart of the game.",
+        "An empty tableau column can only be filled with a King (alone or with the run stacked on it).",
+        "Drag cards to move them, or tap a card and then tap where it should go. Double-tap a card to send it straight to its foundation.",
+        "You win when all four foundations are complete, Ace through King."
+      ]
+    },
+    "spider": {
+      "goal": "Build eight complete King-to-Ace runs in a single suit — each finished run flies off the board.",
+      "steps": [
+        "Ten columns are dealt, with only the top cards face up. Any card can be placed on a card one rank higher, regardless of suit or color.",
+        "Only cards in a same-suit descending sequence move together as a group — mixed-suit stacks must be moved one piece at a time.",
+        "Try to gather runs of one suit. A complete King-through-Ace run in one suit is removed from the board automatically.",
+        "Tap the stock (top right) to deal one new card onto every column. You cannot deal while any column is empty.",
+        "Empty columns accept any card and are your most valuable tool — use them to take mixed stacks apart and re-sort them.",
+        "Face-down cards flip once the cards above them are moved away.",
+        "You win when all eight runs are completed and the board is clear."
+      ]
+    },
+    "freecell": {
+      "goal": "Move all 52 cards to the four foundations, building each suit up from Ace to King.",
+      "steps": [
+        "Everything is dealt face up into eight columns — nothing is hidden, so the whole game can be planned from the first move.",
+        "Build tableau columns downward in alternating colors, just like Klondike.",
+        "The four free cells (top left) each hold one card of your choice. Park cards there to dig out the ones beneath.",
+        "Move Aces to the foundations as they surface, then build each suit upward: Ace, 2, 3 … King.",
+        "Any card or run may be placed on an empty column.",
+        "You can only move several cards at once if you have room: one card, plus one more for each empty free cell — doubled for every empty column.",
+        "Nearly every FreeCell deal can be won. If you feel stuck, undo and try another order — you win when all four foundations are complete."
+      ]
+    },
+    "pyramid": {
+      "goal": "Clear all 28 cards from the pyramid by removing pairs that add up to 13.",
+      "steps": [
+        "Only fully uncovered cards can be played — a card unlocks once the two cards overlapping it from the row below are gone. Dimmed cards are still locked; the bottom row starts open.",
+        "Tap two open cards whose ranks add up to 13 to remove them. Ace counts as 1, Jack 11, Queen 12: so pair Ace + Queen, 2 + Jack, 3 + 10, 4 + 9, 5 + 8, and 6 + 7.",
+        "Kings count as 13 on their own — tap a King twice to remove it by itself.",
+        "Tap the stock below the pyramid to turn a card onto the waste. The top waste card can pair with any open pyramid card.",
+        "When the stock is empty, tap it again to flip the waste back over — recycle as often as you need.",
+        "You win the moment the pyramid is empty; cards left in the stock or waste don't matter."
+      ]
+    },
+    "tripeaks": {
+      "goal": "Clear all three peaks by playing cards one rank up or down from the waste card.",
+      "steps": [
+        "Only fully uncovered cards can be played — a card unlocks once the two cards overlapping it from below are gone. Dimmed cards are still locked; the bottom row starts open.",
+        "Tap any open card that is exactly one rank above or below the top waste card — it moves onto the waste and becomes the new card to match.",
+        "King and Ace wrap around: an Ace plays on a King, and a King plays on an Ace.",
+        "Ride the chains: each card you play opens new cards, and long runs without drawing are how the peaks fall fast.",
+        "Stuck? Tap the stock to turn a new card onto the waste. When the stock runs out, tap it again to recycle — as many times as you like.",
+        "You win the moment all three peaks are cleared; cards left in the stock don't matter."
+      ]
+    }
+  },
   "difficulty": {
     "easy": "Easy",
     "medium": "Medium",
