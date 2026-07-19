@@ -254,6 +254,9 @@
 .card__pip {
   width: calc(var(--card-w) * 0.2);
   height: calc(var(--card-w) * 0.2);
+  /* Breathing room under the rank — the club glyph fills its box to the top
+     edge and touches the digits without it. */
+  margin-top: calc(var(--card-w) * 0.05);
 }
 
 .card__center {
