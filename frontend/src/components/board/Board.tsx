@@ -117,10 +117,11 @@ function tableauSpecs(
 }
 
 // Pyramid's geometry is a triangle, not columns: row r (0=apex..6=base) holds
-// r+1 cards, each row overlapping the one below so a card visually rests on
-// the two "children" it depends on. The apex sits in front (highest z); the
-// base row is drawn last/behind, matching the exposure rule (both children
-// gone → exposed). Stock + waste sit centered below the triangle.
+// r+1 cards, each row overlapping the one above so a card is visually covered
+// by the two "children" it depends on. Rows are stacked like the physical
+// deal — the base row lands last, in front — so every card keeps its top edge
+// (rank + suit corner) visible; only its bottom sliver is tucked under the
+// row below. Stock + waste sit centered below the triangle.
 function buildPyramidLayout(model: BoardModel, width: number): Layout {
   const rows = PYRAMID_ROW_COUNT;
   const cols = rows; // the base row is the widest, at `rows` cards
@@ -154,7 +155,7 @@ function buildPyramidLayout(model: BoardModel, width: number): Layout {
           faceUp: rc.faceUp,
           x: pos.x,
           y: pos.y,
-          z: rows - row, // apex drawn in front of the rows it rests on
+          z: row + 1, // later rows are dealt on top — keeps every card's corner visible
           pileId: pile.id,
           index: 0,
           draggable: exposed,
@@ -205,8 +206,8 @@ function buildPyramidLayout(model: BoardModel, width: number): Layout {
 // 10-card base row — peak p's base range is columns [3p, 3p+3], so adjacent
 // peaks share one boundary column. Each card's column is the midpoint of the
 // two cards (in the row below) it rests on, same idea as Pyramid but computed
-// per-peak rather than across one continuous triangle. Apex sits in front
-// (highest z); the shared base row is drawn last/behind.
+// per-peak rather than across one continuous triangle. As in Pyramid, later
+// rows are dealt on top (base row in front) so every card's corner stays visible.
 function triPeaksPosition(index: number): { row: number; col: number } {
   if (index < 3) {
     return { row: 0, col: 3 * index + 1.5 };
@@ -256,7 +257,7 @@ function buildTriPeaksLayout(model: BoardModel, width: number): Layout {
         faceUp: rc.faceUp,
         x: pos.x,
         y: pos.y,
-        z: rows - row, // apex drawn in front of the rows it rests on
+        z: row + 1, // later rows are dealt on top — keeps every card's corner visible
         pileId: pile.id,
         index: 0,
         draggable: exposed,
