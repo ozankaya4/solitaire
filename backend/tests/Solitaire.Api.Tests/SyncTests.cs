@@ -100,6 +100,45 @@ public class SyncTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task PushedStats_AreVisibleOnAnotherDevice_AndMergeMonotonically()
+    {
+        var deviceA = await RegisterAsync("syncer_stats");
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await deviceA.PutAsJsonAsync("/api/sync/stats/klondike",
+                new { variant = "klondike", gamesPlayed = 13, wins = 8, bestTimeMs = 210_000L })).StatusCode);
+
+        // A stale device pushes lower counts and a worse (higher) best time — must not regress.
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await deviceA.PutAsJsonAsync("/api/sync/stats/klondike",
+                new { variant = "klondike", gamesPlayed = 5, wins = 2, bestTimeMs = 999_000L })).StatusCode);
+
+        var deviceB = await LoginAsync("syncer_stats");
+        var state = await deviceB.GetFromJsonAsync<JsonElement>("/api/sync");
+        var stat = state.GetProperty("stats").EnumerateArray().Single();
+        Assert.Equal("klondike", stat.GetProperty("variant").GetString());
+        Assert.Equal(13, stat.GetProperty("gamesPlayed").GetInt32());
+        Assert.Equal(8, stat.GetProperty("wins").GetInt32());
+        Assert.Equal(210_000, stat.GetProperty("bestTimeMs").GetInt64());
+    }
+
+    [Fact]
+    public async Task Stats_And_Progress_ShareTheSameRow()
+    {
+        // Progress and stats both live on the PlayerStats row; pushing one must not
+        // wipe the other, and GET returns both.
+        var client = await RegisterAsync("syncer_statsprog");
+        await client.PutAsJsonAsync("/api/sync/progress/spider", new { variant = "spider", currentLevel = 6 });
+        await client.PutAsJsonAsync("/api/sync/stats/spider",
+            new { variant = "spider", gamesPlayed = 4, wins = 1, bestTimeMs = (long?)null });
+
+        var state = await client.GetFromJsonAsync<JsonElement>("/api/sync");
+        Assert.Equal(6, state.GetProperty("progress").EnumerateArray().Single().GetProperty("currentLevel").GetInt32());
+        var stat = state.GetProperty("stats").EnumerateArray().Single();
+        Assert.Equal(4, stat.GetProperty("gamesPlayed").GetInt32());
+        Assert.Equal(1, stat.GetProperty("wins").GetInt32());
+    }
+
+    [Fact]
     public async Task NewerSave_Wins_OlderSave_IsIgnored()
     {
         var v = LoadPartial();

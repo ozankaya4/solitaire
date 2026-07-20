@@ -32,6 +32,8 @@ public static class SyncEndpoints
         group.MapDelete("/saves/{variant}", DeleteSaveAsync);
         // Push current level for a variant (kept monotonic server-side).
         group.MapPut("/progress/{variant}", PutProgressAsync);
+        // Push lifetime stats for a variant (merged monotonically server-side).
+        group.MapPut("/stats/{variant}", PutStatsAsync);
     }
 
     private static async Task<IResult> GetStateAsync(
@@ -49,12 +51,26 @@ public static class SyncEndpoints
         var saves = await db.GameSaves
             .Where(s => s.UserId == userId)
             .ToListAsync(ct);
-        var stats = await db.PlayerStats
+        // The PlayerStats row carries both the level (progress) and the lifetime
+        // stats for a variant, so one read feeds both lists.
+        var playerStats = await db.PlayerStats
             .Where(s => s.UserId == userId)
-            .Select(s => new ProgressDto { Variant = s.Variant, CurrentLevel = s.CurrentLevel })
             .ToListAsync(ct);
 
-        return Results.Ok(new SyncStateResponse(saves.Select(ToDto).ToList(), stats));
+        var progress = playerStats
+            .Select(s => new ProgressDto { Variant = s.Variant, CurrentLevel = s.CurrentLevel })
+            .ToList();
+        var stats = playerStats
+            .Select(s => new StatsDto
+            {
+                Variant = s.Variant,
+                GamesPlayed = s.GamesPlayed,
+                Wins = s.Wins,
+                BestTimeMs = s.BestTimeMs,
+            })
+            .ToList();
+
+        return Results.Ok(new SyncStateResponse(saves.Select(ToDto).ToList(), progress, stats));
     }
 
     private static async Task<IResult> PutSaveAsync(
@@ -164,6 +180,46 @@ public static class SyncEndpoints
         }
         // Monotonic: progress only moves forward, so a stale device can't roll it back.
         stat.CurrentLevel = Math.Max(stat.CurrentLevel, request.CurrentLevel);
+
+        await db.SaveChangesAsync(ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> PutStatsAsync(
+        string variant,
+        StatsDto request,
+        UserManager<ApplicationUser> userManager,
+        AppDbContext db,
+        IStringLocalizer<ApiMessages> localizer,
+        ClaimsPrincipal principal,
+        CancellationToken ct)
+    {
+        if (!AuthEndpoints.TryValidate(request, localizer, out var errors))
+        {
+            return Results.ValidationProblem(errors);
+        }
+        if (!SolitaireEngines.TryGet(variant, out var engine))
+        {
+            return Results.NotFound(new { error = localizer["Leaderboard.UnknownVariant", variant].Value });
+        }
+
+        var userId = userManager.GetUserId(principal)!;
+        var stat = await db.PlayerStats.SingleOrDefaultAsync(s => s.UserId == userId && s.Variant == engine.Variant, ct);
+        if (stat is null)
+        {
+            stat = new PlayerStatEntity { UserId = userId, Variant = engine.Variant, CurrentLevel = 1 };
+            db.PlayerStats.Add(stat);
+        }
+
+        // Monotonic, idempotent merge: counters only climb (highest wins), the best
+        // time only drops. Re-pushing the same values never double-counts, and a
+        // stale device can't undo another device's progress.
+        stat.GamesPlayed = Math.Max(stat.GamesPlayed, request.GamesPlayed);
+        stat.Wins = Math.Max(stat.Wins, request.Wins);
+        if (request.BestTimeMs is { } incoming)
+        {
+            stat.BestTimeMs = stat.BestTimeMs is { } current ? Math.Min(current, incoming) : incoming;
+        }
 
         await db.SaveChangesAsync(ct);
         return Results.NoContent();

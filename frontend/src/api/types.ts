@@ -78,7 +78,16 @@ export interface SyncProgress {
   readonly currentLevel: number;
 }
 
+/** Lifetime, per-variant stats as they travel between a device and the account. */
+export interface SyncStat {
+  readonly variant: string;
+  readonly gamesPlayed: number;
+  readonly wins: number;
+  readonly bestTimeMs: number | null;
+}
+
 export interface SyncStateResponse {
   readonly saves: SyncSave[];
   readonly progress: SyncProgress[];
+  readonly stats: SyncStat[];
 }

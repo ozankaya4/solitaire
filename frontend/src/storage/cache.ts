@@ -21,7 +21,7 @@ let hydrated = false;
 // Lets the UI refresh after a background cloud pull, and lets the sync layer know
 // what to push. 'remote' marks a write that CAME FROM the server, so the sync
 // layer ignores it (it must not echo a pulled value straight back up).
-export type StoreChangeKind = 'save' | 'delete' | 'progress' | 'remote';
+export type StoreChangeKind = 'save' | 'delete' | 'progress' | 'stats' | 'remote';
 export interface StoreChange {
   readonly kind: StoreChangeKind;
   readonly variant?: string;
@@ -208,9 +208,10 @@ export function applyRemoteSave(save: SavedGame): void {
 }
 
 /**
- * Wipes local saves + progress (not settings/stats). Used when a different account
- * signs in on a shared device, so one account never adopts another's games. Emits
- * a 'remote' change so the UI refreshes without pushing the deletions to a server.
+ * Wipes local saves + progress + stats (not settings). Used when a different
+ * account signs in on a shared device, so one account never adopts — or, now that
+ * stats sync, uploads — another's data. Emits a 'remote' change so the UI refreshes
+ * without pushing the deletions to a server.
  */
 export function clearGameData(): void {
   for (const variant of Object.keys(snapshot.saves)) {
@@ -219,8 +220,12 @@ export function clearGameData(): void {
   for (const variant of Object.keys(snapshot.progress)) {
     void idbDelete('progress', variant).catch(() => undefined);
   }
+  for (const variant of Object.keys(snapshot.stats)) {
+    void idbDelete('stats', variant).catch(() => undefined);
+  }
   snapshot.saves = {};
   snapshot.progress = {};
+  snapshot.stats = {};
   emit({ kind: 'remote' });
 }
 
@@ -230,9 +235,22 @@ export function getStats(variant: VariantId): VariantStats {
   return snapshot.stats[variant] ?? emptyStats();
 }
 
+export function getAllStats(): Record<string, VariantStats> {
+  return { ...snapshot.stats };
+}
+
 function writeStats(variant: VariantId, stats: VariantStats): void {
   snapshot.stats[variant] = stats;
   void idbPut('stats', variant, stats).catch(() => undefined);
+  // Notify the sync layer so lifetime stats mirror across devices.
+  emit({ kind: 'stats', variant });
+}
+
+/** Applies stats pulled from the server (does not trigger a push back up). */
+export function applyRemoteStats(variant: string, stats: VariantStats): void {
+  snapshot.stats[variant] = stats;
+  void idbPut('stats', variant, stats).catch(() => undefined);
+  emit({ kind: 'remote', variant });
 }
 
 export function recordGameStarted(variant: VariantId): void {

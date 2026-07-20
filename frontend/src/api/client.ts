@@ -15,6 +15,7 @@ import type {
   SubmitGameResponse,
   SyncProgress,
   SyncSave,
+  SyncStat,
   SyncStateResponse,
   UserResponse,
 } from './types';
@@ -188,6 +189,10 @@ export const api = {
 
   putProgress: async (progress: SyncProgress): Promise<void> => {
     await request<void>(`/api/sync/progress/${progress.variant}`, { method: 'PUT', body: progress });
+  },
+
+  putStats: async (stat: SyncStat): Promise<void> => {
+    await request<void>(`/api/sync/stats/${stat.variant}`, { method: 'PUT', body: stat });
   },
 };
 

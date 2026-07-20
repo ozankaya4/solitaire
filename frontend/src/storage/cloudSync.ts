@@ -11,15 +11,18 @@
 // plan out and wire it to auth + store changes.
 
 import { api, withRetry } from '../api/client';
-import type { SyncProgress, SyncSave, SyncStateResponse } from '../api/types';
+import type { SyncProgress, SyncSave, SyncStat, SyncStateResponse } from '../api/types';
 import type { VariantId } from '../app/types';
-import type { SavedGame } from './types';
+import type { SavedGame, VariantStats } from './types';
 import {
   applyRemoteProgress,
   applyRemoteSave,
+  applyRemoteStats,
   clearGameData,
   getAllProgress,
+  getAllStats,
   getSave,
+  getStats,
   getStoredLevel,
   listSaves,
   subscribeStore,
@@ -54,6 +57,35 @@ function toLocalSave(remote: SyncSave): SavedGame {
   };
 }
 
+const ZERO_STATS: VariantStats = { gamesPlayed: 0, wins: 0, bestTimeMs: null };
+
+/** Monotonic per-field merge: counts climb (max), best time drops (min). */
+function mergeStats(a: VariantStats, b: VariantStats): VariantStats {
+  const bestTimeMs =
+    a.bestTimeMs === null
+      ? b.bestTimeMs
+      : b.bestTimeMs === null
+        ? a.bestTimeMs
+        : Math.min(a.bestTimeMs, b.bestTimeMs);
+  return {
+    gamesPlayed: Math.max(a.gamesPlayed, b.gamesPlayed),
+    wins: Math.max(a.wins, b.wins),
+    bestTimeMs,
+  };
+}
+
+function statsEqual(a: VariantStats, b: VariantStats): boolean {
+  return a.gamesPlayed === b.gamesPlayed && a.wins === b.wins && a.bestTimeMs === b.bestTimeMs;
+}
+
+function toSyncStat(variant: string, s: VariantStats): SyncStat {
+  return { variant, gamesPlayed: s.gamesPlayed, wins: s.wins, bestTimeMs: s.bestTimeMs };
+}
+
+function toLocalStats(remote: SyncStat): VariantStats {
+  return { gamesPlayed: remote.gamesPlayed, wins: remote.wins, bestTimeMs: remote.bestTimeMs };
+}
+
 // -- pure merge planning (unit-tested) ----------------------------------------
 
 export interface MergePlan {
@@ -65,16 +97,23 @@ export interface MergePlan {
   readonly adoptProgress: SyncProgress[];
   /** Local progress variants that are ahead of the server → push up. */
   readonly pushProgress: string[];
+  /** Merged stats to write locally (server had something local didn't). */
+  readonly adoptStats: SyncStat[];
+  /** Stat variants whose merged value the server is missing → push up. */
+  readonly pushStats: string[];
 }
 
 /**
  * Decides, for each variant, which side is authoritative. Saves: the newer
- * `updatedAt` wins. Progress: the higher level wins (monotonic). Variants present
- * on only one side flow to the other.
+ * `updatedAt` wins. Progress: the higher level wins (monotonic). Stats: a
+ * per-field monotonic merge (highest counts, lowest best time) — so both sides
+ * converge and re-syncing never double-counts. Variants present on only one side
+ * flow to the other.
  */
 export function planMerge(
   localSaves: readonly SavedGame[],
   localProgress: Readonly<Record<string, number>>,
+  localStats: Readonly<Record<string, VariantStats>>,
   server: SyncStateResponse,
 ): MergePlan {
   const adoptSaves: SyncSave[] = [];
@@ -105,7 +144,23 @@ export function planMerge(
     }
   }
 
-  return { adoptSaves, pushSaves, adoptProgress, pushProgress };
+  const adoptStats: SyncStat[] = [];
+  const pushStats: string[] = [];
+  const serverStat = new Map(server.stats.map((s) => [s.variant, toLocalStats(s)]));
+  for (const variant of new Set([...Object.keys(localStats), ...serverStat.keys()])) {
+    const local = localStats[variant] ?? ZERO_STATS;
+    const remote = serverStat.get(variant) ?? ZERO_STATS;
+    const merged = mergeStats(local, remote);
+    // Adopt if local isn't already the merged value; push if the server isn't.
+    if (!statsEqual(merged, local)) {
+      adoptStats.push(toSyncStat(variant, merged));
+    }
+    if (!statsEqual(merged, remote)) {
+      pushStats.push(variant);
+    }
+  }
+
+  return { adoptSaves, pushSaves, adoptProgress, pushProgress, adoptStats, pushStats };
 }
 
 // -- controller ---------------------------------------------------------------
@@ -123,6 +178,7 @@ let reconciling = false;
 let lastReconcileAt = 0;
 const dirtySaves = new Set<string>();
 const dirtyProgress = new Set<string>();
+const dirtyStats = new Set<string>();
 
 function readOwner(): string | null {
   try {
@@ -183,6 +239,7 @@ export function stopCloudSync(): void {
   }
   dirtySaves.clear();
   dirtyProgress.clear();
+  dirtyStats.clear();
 }
 
 function onVisibilityChange(): void {
@@ -223,13 +280,17 @@ async function reconcile(): Promise<void> {
       return;
     }
 
-    const plan = planMerge(listSaves(), getAllProgress(), state);
+    const plan = planMerge(listSaves(), getAllProgress(), getAllStats(), state);
 
     for (const remote of plan.adoptSaves) {
       applyRemoteSave(toLocalSave(remote));
     }
     for (const p of plan.adoptProgress) {
       applyRemoteProgress(p.variant, p.currentLevel);
+    }
+    // Adopt merged stats before pushing, so the push below sends the merged value.
+    for (const remote of plan.adoptStats) {
+      applyRemoteStats(remote.variant, toLocalStats(remote));
     }
     for (const variant of plan.pushSaves) {
       const local = getSave(variant as VariantId);
@@ -242,6 +303,9 @@ async function reconcile(): Promise<void> {
       if (level != null) {
         await api.putProgress({ variant, currentLevel: level }).catch(() => undefined);
       }
+    }
+    for (const variant of plan.pushStats) {
+      await api.putStats(toSyncStat(variant, getStats(variant as VariantId))).catch(() => undefined);
     }
   } finally {
     reconciling = false;
@@ -261,6 +325,8 @@ function onStoreChange(change: StoreChange): void {
   }
   if (change.kind === 'save') {
     dirtySaves.add(change.variant);
+  } else if (change.kind === 'stats') {
+    dirtyStats.add(change.variant);
   } else {
     dirtyProgress.add(change.variant);
   }
@@ -291,5 +357,9 @@ async function flush(): Promise<void> {
     if (level != null) {
       await api.putProgress({ variant, currentLevel: level }).catch(() => undefined);
     }
+  }
+  for (const variant of [...dirtyStats]) {
+    dirtyStats.delete(variant);
+    await api.putStats(toSyncStat(variant, getStats(variant as VariantId))).catch(() => undefined);
   }
 }

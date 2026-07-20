@@ -50,7 +50,30 @@ public sealed class ProgressDto
     public int CurrentLevel { get; set; }
 }
 
+/// <summary>
+/// Lifetime, per-variant play stats. Merged monotonically server-side (highest
+/// counts win, best time is the lowest), so a stale device can never roll them
+/// back and re-syncing the same values is idempotent (never double-counts).
+/// </summary>
+public sealed class StatsDto
+{
+    [Required]
+    [MaxLength(32)]
+    public string Variant { get; set; } = string.Empty;
+
+    [Range(0, int.MaxValue)]
+    public int GamesPlayed { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int Wins { get; set; }
+
+    /// <summary>Best completion time in ms, or null when never won.</summary>
+    [Range(0, long.MaxValue)]
+    public long? BestTimeMs { get; set; }
+}
+
 /// <summary>Everything a freshly signed-in device needs to catch up.</summary>
 public sealed record SyncStateResponse(
     IReadOnlyList<SaveDto> Saves,
-    IReadOnlyList<ProgressDto> Progress);
+    IReadOnlyList<ProgressDto> Progress,
+    IReadOnlyList<StatsDto> Stats);
