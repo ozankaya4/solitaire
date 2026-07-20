@@ -1,6 +1,10 @@
 // Cross-device sync for signed-in players. Local-first: the device owns the data
 // and the server is a durable mirror. On sign-in we reconcile (newest save wins,
 // highest level wins), then push local changes up as they happen (debounced).
+// We also re-reconcile whenever the app regains focus/visibility, so a game
+// saved on one device shows up on another as soon as you return to it — without
+// this, a device pulls only once per load and mobile PWAs (which resume from a
+// frozen state rather than reloading) would keep showing stale saves.
 //
 // The merge decision is a pure function (see `planMerge`) so it can be tested
 // without a network or a store; this file's side-effecting parts just carry the
@@ -108,10 +112,15 @@ export function planMerge(
 
 const OWNER_KEY = 'solitaire:sync-owner';
 const FLUSH_DELAY_MS = 1500;
+// A focus/visibility re-sync no more often than this — switching tabs quickly
+// (and the server's "sync" rate limit) shouldn't trigger a burst of pulls.
+const RESYNC_THROTTLE_MS = 8000;
 
 let active = false;
 let unsubscribe: (() => void) | null = null;
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
+let reconciling = false;
+let lastReconcileAt = 0;
 const dirtySaves = new Set<string>();
 const dirtyProgress = new Set<string>();
 
@@ -148,6 +157,12 @@ export function startCloudSync(userId: string): void {
   writeOwner(userId);
 
   unsubscribe = subscribeStore(onStoreChange);
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange);
+  }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('focus', maybeResync);
+  }
   void reconcile();
 }
 
@@ -156,6 +171,12 @@ export function stopCloudSync(): void {
   active = false;
   unsubscribe?.();
   unsubscribe = null;
+  if (typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+  }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('focus', maybeResync);
+  }
   if (flushTimer) {
     clearTimeout(flushTimer);
     flushTimer = null;
@@ -164,37 +185,67 @@ export function stopCloudSync(): void {
   dirtyProgress.clear();
 }
 
-async function reconcile(): Promise<void> {
-  let state: SyncStateResponse;
-  try {
-    // Retried: sign-in is often the session's first API touch (cold start).
-    state = await withRetry(() => api.getSyncState(), 3, 3000);
-  } catch {
-    return; // offline / server down — local play is unaffected; retry next sign-in
+function onVisibilityChange(): void {
+  if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+    maybeResync();
   }
+}
+
+/** Re-pull from the server when the app returns to the foreground (throttled). */
+function maybeResync(): void {
   if (!active) {
     return;
   }
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    return;
+  }
+  if (Date.now() - lastReconcileAt < RESYNC_THROTTLE_MS) {
+    return;
+  }
+  void reconcile();
+}
 
-  const plan = planMerge(listSaves(), getAllProgress(), state);
+async function reconcile(): Promise<void> {
+  // One reconcile at a time; the throttle above rides on the timestamp this sets.
+  if (reconciling) {
+    return;
+  }
+  reconciling = true;
+  try {
+    let state: SyncStateResponse;
+    try {
+      // Retried: sign-in is often the session's first API touch (cold start).
+      state = await withRetry(() => api.getSyncState(), 3, 3000);
+    } catch {
+      return; // offline / server down — local play is unaffected; retry next resync
+    }
+    if (!active) {
+      return;
+    }
 
-  for (const remote of plan.adoptSaves) {
-    applyRemoteSave(toLocalSave(remote));
-  }
-  for (const p of plan.adoptProgress) {
-    applyRemoteProgress(p.variant, p.currentLevel);
-  }
-  for (const variant of plan.pushSaves) {
-    const local = getSave(variant as VariantId);
-    if (local) {
-      await api.putSave(toSyncSave(local)).catch(() => undefined);
+    const plan = planMerge(listSaves(), getAllProgress(), state);
+
+    for (const remote of plan.adoptSaves) {
+      applyRemoteSave(toLocalSave(remote));
     }
-  }
-  for (const variant of plan.pushProgress) {
-    const level = getStoredLevel(variant);
-    if (level != null) {
-      await api.putProgress({ variant, currentLevel: level }).catch(() => undefined);
+    for (const p of plan.adoptProgress) {
+      applyRemoteProgress(p.variant, p.currentLevel);
     }
+    for (const variant of plan.pushSaves) {
+      const local = getSave(variant as VariantId);
+      if (local) {
+        await api.putSave(toSyncSave(local)).catch(() => undefined);
+      }
+    }
+    for (const variant of plan.pushProgress) {
+      const level = getStoredLevel(variant);
+      if (level != null) {
+        await api.putProgress({ variant, currentLevel: level }).catch(() => undefined);
+      }
+    }
+  } finally {
+    reconciling = false;
+    lastReconcileAt = Date.now();
   }
 }
 
