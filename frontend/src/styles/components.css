@@ -351,6 +351,31 @@
   display: flex;
 }
 
+/* Wrapping picker for many options (leaderboard's 5 game modes): a balanced
+   grid that flows to a second row rather than overflowing a narrow modal. Each
+   row's items grow to fill the width, so 5 options land as a tidy 3 + 2. */
+.segmented--wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.segmented--wrap .seg {
+  flex: 1 1 28%;
+  min-width: 0;
+  padding: 0 var(--space-xs);
+  gap: var(--space-2xs);
+  /* Tighter type so the longer game names (KLONDIKE, FREECELL, TRIPEAKS) fit
+     the narrower cells of the wrapped grid without truncating. */
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-tight);
+}
+
+.segmented--wrap .seg span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .seg {
   display: inline-flex;
   align-items: center;

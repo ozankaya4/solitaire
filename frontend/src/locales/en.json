@@ -11,7 +11,7 @@
     "saved": "Saved games",
     "leaderboard": "Leaderboard",
     "mostPopular": "Most popular",
-    "drawNote": "Draw {{count}} · {{variant}}"
+    "selectedNote": "{{variant}}"
   },
   "auth": {
     "signIn": "Sign in",
@@ -64,10 +64,6 @@
     "languageHint": "Interface language.",
     "english": "English",
     "turkish": "Türkçe",
-    "draw": "Klondike draw",
-    "drawHint": "Cards turned from the stock.",
-    "draw1": "Draw 1",
-    "draw3": "Draw 3",
     "legal": "Small print",
     "privacyLink": "Privacy",
     "termsLink": "Terms"

@@ -4,7 +4,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Card } from '../engine/cards';
-import { KLONDIKE_UNLIMITED_REDEALS } from '../engine/klondike';
 import { PYRAMID_WASTE } from '../engine/pyramid';
 import type { MoveDto } from '../engine/types';
 import type { Grade } from '../game/grading';
@@ -90,22 +89,13 @@ function usesFoundationSlots(variant: VariantId): boolean {
   return variant === 'klondike' || variant === 'freecell';
 }
 
-function bagFor(
-  variant: VariantId,
-  drawMode: number,
-  levelBag: Readonly<Record<string, number>>,
-): Record<string, number> {
-  // Klondike honors the player's draw setting; the level supplies the seed.
-  if (variant === 'klondike') {
-    return { drawCount: drawMode, maxRedeals: KLONDIKE_UNLIMITED_REDEALS };
-  }
-  return { ...levelBag };
-}
-
-function startLevel(variant: VariantId, drawMode: number): GameData {
+function startLevel(variant: VariantId): GameData {
   const level = getCurrentLevel(progress, variant);
   const def = getLevel(variant, level);
-  const bag = bagFor(variant, drawMode, def.options);
+  // The level's own options bag is authoritative — for Klondike it already
+  // carries draw-1 + unlimited redeals, the mode the curated ladder is
+  // generated and solver-verified for (draw-3 leaves many deals unsolvable).
+  const bag = { ...def.options };
   return {
     variant,
     level,
@@ -150,7 +140,7 @@ function resume(variant: VariantId): GameData | null {
   };
 }
 
-function begin(variant: VariantId, drawMode: number): GameData {
+function begin(variant: VariantId): GameData {
   if (!isPlayable(variant)) {
     return {
       variant,
@@ -165,18 +155,16 @@ function begin(variant: VariantId, drawMode: number): GameData {
       elapsedMs: 0,
     };
   }
-  return resume(variant) ?? startLevel(variant, drawMode);
+  return resume(variant) ?? startLevel(variant);
 }
 
 export function useGame(initialVariant?: VariantId): Game {
-  const { defaultVariant, drawMode } = useSettings();
-  const drawRef = useRef(drawMode);
-  drawRef.current = drawMode;
+  const { defaultVariant } = useSettings();
 
   // Board entry uses the settings default variant, unless an explicit variant is
   // requested (e.g. resuming a specific game from the Saved-games list).
   const startVariant = initialVariant ?? defaultVariant;
-  const [data, setData] = useState<GameData>(() => begin(startVariant, drawMode));
+  const [data, setData] = useState<GameData>(() => begin(startVariant));
   const [selected, setSelected] = useState<Selection | null>(null);
   const [hint, setHint] = useState<HintHighlight | null>(null);
   const [dealNonce, setDealNonce] = useState(0);
@@ -492,7 +480,7 @@ export function useGame(initialVariant?: VariantId): Game {
     setSelected(null);
     setHint(null);
     setLastWin(null);
-    setData(startLevel(data.variant, drawRef.current));
+    setData(startLevel(data.variant));
     setDealNonce((n) => n + 1);
   }, [data.variant]);
 
@@ -502,7 +490,7 @@ export function useGame(initialVariant?: VariantId): Game {
     setSelected(null);
     setHint(null);
     setLastWin(null);
-    setData(begin(variant, drawRef.current));
+    setData(begin(variant));
     setDealNonce((n) => n + 1);
   }, []);
 

@@ -54,6 +54,7 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
     <Modal title={t('leaderboard.title')} onClose={onClose}>
       <Segmented<VariantId>
         block
+        wrap
         label={t('leaderboard.variantLabel')}
         value={variant}
         onChange={setVariant}

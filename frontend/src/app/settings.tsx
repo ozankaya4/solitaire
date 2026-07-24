@@ -1,16 +1,15 @@
-// Global player settings (theme, default variant, language, Klondike draw mode)
-// persisted to localStorage and applied to the document (data-theme, lang, i18n).
+// Global player settings (theme, default variant, language) persisted to
+// localStorage and applied to the document (data-theme, lang, i18n).
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import i18n from '../i18n';
 import { getPersistedSettings, setPersistedSettings } from '../storage/cache';
-import type { DrawMode, Language, ThemeName, VariantId } from './types';
+import type { Language, ThemeName, VariantId } from './types';
 
 interface Settings {
   readonly theme: ThemeName;
   readonly defaultVariant: VariantId;
   readonly language: Language;
-  readonly drawMode: DrawMode;
 }
 
 interface SettingsContextValue extends Settings {
@@ -18,7 +17,6 @@ interface SettingsContextValue extends Settings {
   toggleTheme: () => void;
   setDefaultVariant: (variant: VariantId) => void;
   setLanguage: (language: Language) => void;
-  setDrawMode: (drawMode: DrawMode) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -34,7 +32,6 @@ function loadInitial(): Settings {
     theme: prefersLight() ? 'light' : 'dark',
     defaultVariant: 'klondike',
     language: 'en',
-    drawMode: 1,
   };
   // The cache is hydrated from IndexedDB before render (see main.tsx bootstrap).
   return { ...base, ...(getPersistedSettings() ?? {}) };
@@ -61,7 +58,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setSettings((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' })),
       setDefaultVariant: (defaultVariant) => setSettings((s) => ({ ...s, defaultVariant })),
       setLanguage: (language) => setSettings((s) => ({ ...s, language })),
-      setDrawMode: (drawMode) => setSettings((s) => ({ ...s, drawMode })),
     }),
     [settings],
   );

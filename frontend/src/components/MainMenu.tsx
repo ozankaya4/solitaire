@@ -31,7 +31,7 @@ export function MainMenu({
   onOpenAuth,
 }: MainMenuProps) {
   const { t } = useTranslation();
-  const { defaultVariant, drawMode } = useSettings();
+  const { defaultVariant } = useSettings();
   const { user, logout } = useAuth();
   // The picker here is a one-off "what to play right now" choice, seeded from
   // the persistent Settings default but never writing back to it — picking a
@@ -110,8 +110,7 @@ export function MainMenu({
       )}
 
       <p className="footnote">
-        <StarIcon size={12} />{' '}
-        {t('menu.drawNote', { count: drawMode, variant: t(`variant.${selectedVariant}`) })}
+        <StarIcon size={12} /> {t('menu.selectedNote', { variant: t(`variant.${selectedVariant}`) })}
       </p>
     </section>
   );

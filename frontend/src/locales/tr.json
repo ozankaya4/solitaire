@@ -11,7 +11,7 @@
     "saved": "Kayıtlı oyunlar",
     "leaderboard": "Skor tablosu",
     "mostPopular": "En popüler",
-    "drawNote": "{{count}} kart · {{variant}}"
+    "selectedNote": "{{variant}}"
   },
   "auth": {
     "signIn": "Giriş yap",
@@ -64,10 +64,6 @@
     "languageHint": "Arayüz dili.",
     "english": "English",
     "turkish": "Türkçe",
-    "draw": "Klondike çekiş",
-    "drawHint": "Desteden çevrilen kart sayısı.",
-    "draw1": "1 kart çek",
-    "draw3": "3 kart çek",
     "legal": "İnce yazılar",
     "privacyLink": "Gizlilik",
     "termsLink": "Koşullar"

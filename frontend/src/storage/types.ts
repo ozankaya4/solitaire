@@ -1,4 +1,4 @@
-import type { VariantId, ThemeName, Language, DrawMode } from '../app/types';
+import type { VariantId, ThemeName, Language } from '../app/types';
 import type { MoveDto } from '../engine/types';
 
 /** An unfinished, resumable game (one per variant). */
@@ -22,7 +22,6 @@ export interface PersistedSettings {
   theme: ThemeName;
   defaultVariant: VariantId;
   language: Language;
-  drawMode: DrawMode;
 }
 
 /** Lifetime, per-variant stats. Win rate is derived (wins / gamesPlayed). */

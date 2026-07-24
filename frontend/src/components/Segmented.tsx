@@ -16,6 +16,8 @@ interface SegmentedProps<T extends string> {
   readonly onChange: (value: T) => void;
   readonly label: string;
   readonly block?: boolean;
+  /** Wrap options onto multiple rows (for pickers with many options, e.g. the leaderboard). */
+  readonly wrap?: boolean;
 }
 
 export function Segmented<T extends string>({
@@ -24,13 +26,17 @@ export function Segmented<T extends string>({
   onChange,
   label,
   block,
+  wrap,
 }: SegmentedProps<T>) {
+  const classes = ['segmented'];
+  if (block) {
+    classes.push('segmented--block');
+  }
+  if (wrap) {
+    classes.push('segmented--wrap');
+  }
   return (
-    <div
-      className={block ? 'segmented segmented--block' : 'segmented'}
-      role="group"
-      aria-label={label}
-    >
+    <div className={classes.join(' ')} role="group" aria-label={label}>
       {options.map((option) => (
         <button
           key={option.value}

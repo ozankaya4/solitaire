@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../app/settings';
 import { VARIANTS } from '../app/variants';
-import type { DrawMode, Language, ThemeName, VariantId } from '../app/types';
+import type { Language, ThemeName, VariantId } from '../app/types';
 import { ArrowLeftIcon, GlobeIcon, MoonIcon, SunIcon } from '../icons/icons';
 import { Segmented } from './Segmented';
 import { Select, type SelectOption } from './Select';
@@ -15,16 +15,8 @@ interface SettingsScreenProps {
 
 export function SettingsScreen({ onBack, onOpenPrivacy, onOpenTerms }: SettingsScreenProps) {
   const { t } = useTranslation();
-  const {
-    theme,
-    setTheme,
-    defaultVariant,
-    setDefaultVariant,
-    language,
-    setLanguage,
-    drawMode,
-    setDrawMode,
-  } = useSettings();
+  const { theme, setTheme, defaultVariant, setDefaultVariant, language, setLanguage } =
+    useSettings();
 
   const variantOptions: SelectOption[] = VARIANTS.map((variant) => ({
     value: variant.id,
@@ -96,20 +88,6 @@ export function SettingsScreen({ onBack, onOpenPrivacy, onOpenTerms }: SettingsS
           />
         </div>
 
-        <div className="field">
-          <span className="field__label">{t('settings.draw')}</span>
-          <span className="field__hint">{t('settings.drawHint')}</span>
-          <Segmented<string>
-            block
-            label={t('settings.draw')}
-            value={String(drawMode)}
-            onChange={(value) => setDrawMode(Number(value) as DrawMode)}
-            options={[
-              { value: '1', label: t('settings.draw1') },
-              { value: '3', label: t('settings.draw3') },
-            ]}
-          />
-        </div>
       </div>
 
       <div className="panel">
